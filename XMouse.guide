@@ -1,160 +1,199 @@
-@DATABASE XMouse
-@AUTHOR reddoc
-@COPYRIGHT © 2024 - XMouse Contributors
+@database XMouse@@$VER: XMouse.guide 1.0 (2025-12-10)
+@(c) 2025 - XMouse Contributors
 
-@NODE MAIN "XMouse 1.0  -  Lightweight SAGA Mouse Wheel Daemon"
+@node MAIN "XMouse 1.0 - Lightweight SAGA Mouse Wheel Daemon"
+@toc CONTENTS
+@index INDEX
+@help MAIN
 
-  @{b}Wheel power for your Apollo 68080@{ub}
+XMouse - Wheel Power for Your Apollo 68080
 
-  A minimal, efficient mouse wheel daemon for Vampire and Apollo
-  accelerators with SAGA chipset support.
+A minimal, efficient mouse wheel daemon for Vampire and Apollo
+accelerators with SAGA chipset support.
 
-  XMouse is a lightweight resident daemon that enables mouse wheel
-  scrolling and extended button support on Amiga systems running
-  Apollo accelerators with the SAGA chipset. Unlike traditional
-  mouse drivers, XMouse runs as a simple daemon with near-zero CPU
-  overhead (~0.5%) and requires no reboot to configure.
+XMouse is a lightweight resident daemon that enables mouse wheel
+scrolling and extended button support on Amiga systems running
+Apollo accelerators with the SAGA chipset. Unlike traditional
+mouse drivers, XMouse runs as a simple daemon with near-zero CPU
+overhead (~0.5%) and requires no reboot to configure.
 
-  Copyright © 2024 - XMouse Contributors
-  Freely distributable for non-commercial purposes.
+Copyright 2025 - XMouse Contributors
+Freely distributable for non-commercial purposes.
 
-@{"Quick Start" link Quick}
+Quick Navigation:
 
-@{"Installation" link Install}
+  @{"Quick Start" link "Quick"}
+  @{"Installation" link "Install"}
+  @{"Usage & Commands" link "Usage"}
+  @{"Configuration" link "Config"}
+  @{"Building from Source" link "Build"}
+  @{"Technical Details" link "Technical"}
+  @{"Troubleshooting" link "Troubleshooting"}
 
-@{"Usage & Commands" link Usage}
-
-@{"Configuration" link Config}
-
-@{"Building from Source" link Build}
-
-@{"Technical Details" link Technical}
-
-@{"Troubleshooting" link Troubleshooting}
-
-@ENDNODE
+@endnode
 
 
-@NODE Quick "Quick Start - Get Up and Running"
+@node CONTENTS "Table of Contents"
 
-@{b}The simplest way to enable wheel support:@{ub}
+XMouse Documentation Contents
 
-1. Copy the @{b}xmouse@{ub} executable to @{b}C:@{ub}
+  @{"Main Page" link "MAIN"}
+  @{"Quick Start" link "Quick"}
+  @{"Installation" link "Install"}
+  @{"Usage & Commands" link "Usage"}
+  @{"Configuration" link "Config"}
+  @{"Building from Source" link "Build"}
+  @{"Technical Details" link "Technical"}
+  @{"Troubleshooting" link "Troubleshooting"}
+  @{"Version History" link "HISTORY"}
+
+@endnode
+
+
+@node INDEX "Index"
+
+Quick Reference
+
+  @{"Quick Start" link "Quick"}
+  @{"Installation" link "Install"}
+  @{"Usage & Commands" link "Usage"}
+  @{"Configuration" link "Config"}
+  @{"Building from Source" link "Build"}
+  @{"Technical Details" link "Technical"}
+  @{"Troubleshooting" link "Troubleshooting"}
+  @{"Version History" link "HISTORY"}
+
+@endnode
+
+
+@node Quick "Quick Start - Get Up and Running"
+@prev MAIN
+@next Install
+
+The simplest way to enable wheel support:
+
+1. Copy the xmouse executable to C:
 
 2. Run from Shell:
-   @{i}C:xmouse@{ui}
+   C:xmouse
 
 3. Done! Your wheel now scrolls in any application.
 
-@{b}What just happened?@{ub}
+What just happened?
 
 XMouse started as a resident daemon. It monitors your mouse wheel
 and sends scroll events to the active window 10 times per second
 (the default polling rate).
 
-@{b}To stop the daemon:@{ub}
+To stop the daemon:
 
-   @{i}C:xmouse STOP@{ui}
+   C:xmouse STOP
 
-Or simply press @{b}CTRL+C@{ub} if the daemon console is visible.
+Or simply press CTRL+C if the daemon console is visible.
 
-@{b}Want the wheel disabled by default on startup?@{ub}
+Want the wheel disabled by default on startup?
 
-Edit your @{b}User-Startup@{ub} script and add:
+Edit your User-Startup script and add:
 
-   @{i}C:xmouse 0x03@{ui}
+   C:xmouse 0x03
 
 This disables the wheel but keeps button support enabled.
 See the Configuration section for all options.
 
-@ENDNODE
+@endnode
 
 
-@NODE Install "Installation"
+@node Install "Installation"
+@prev Quick
+@next Usage
 
-@{b}Manual Installation@{ub}
+Manual Installation
 
 1. Extract the XMouse archive to a temporary directory
 
-2. Copy @{b}xmouse@{ub} executable to @{b}C:@{ub}
-   @{i}copy xmouse c:@{ui}
+2. Copy xmouse executable to C:
+   copy xmouse c:
 
 3. Verify it works:
-   @{i}C:xmouse@{ui}
+   C:xmouse
 
-4. To start automatically at boot, add to @{b}S:User-Startup@{ub}:
-   @{i}C:xmouse 0x13@{ui}
+4. To start automatically at boot, add to S:User-Startup:
+   C:xmouse 0x13
    (0x13 = wheel enabled + buttons enabled, 10ms polling)
 
-@{b}Using the Installer Script@{ub}
+Using the Installer Script
 
-Run the included @{b}Install@{ub} script for automatic installation:
+Run the included Install script for automatic installation:
 - Copies executable to C:
 - Optionally adds to WBStartup
 - Creates helpful drawer structure
 
-@{b}Workbench Installation@{ub}
+Workbench Installation
 
 If you prefer to launch from Workbench:
-- Copy @{b}xmouse@{ub} to a drawer of your choice
+- Copy xmouse to a drawer of your choice
 - The included icon contains ToolTypes for custom configuration
 - Double-click to start the daemon
 
-@ENDNODE
+@endnode
 
 
-@NODE Usage "Usage & Commands"
+@node Usage "Usage & Commands"
+@prev Install
+@next Config
 
-@{b}Basic Commands@{ub}
+Basic Commands
 
-@{i}C:xmouse@{ui}
+C:xmouse
   Toggles daemon on/off. If not running, starts it.
   If already running, stops it.
 
-@{i}C:xmouse START@{ui}
+C:xmouse START
   Starts the daemon (does nothing if already running).
 
-@{i}C:xmouse STOP@{ui}
+C:xmouse STOP
   Cleanly stops the daemon and releases all resources.
 
-@{b}Configuration with Hex Byte@{ub}
+Configuration with Hex Byte
 
-@{i}C:xmouse 0x13@{ui}
+C:xmouse 0x13
   Sends configuration byte 0x13 to running daemon.
   If daemon isn't running, starts it with this configuration.
 
 Common configurations:
-  @{b}0x13@{ub} = Wheel ON + Buttons ON + 10ms polling (recommended)
-  @{b}0x03@{ub} = Wheel OFF + Buttons ON + 10ms polling
-  @{b}0x11@{ub} = Wheel ON + Buttons OFF + 10ms polling
-  @{b}0x31@{ub} = Wheel ON + Buttons ON + 5ms polling (snappier)
-  @{b}0x51@{ub} = Wheel ON + Buttons ON + 20ms polling (smoother)
-  @{b}0x91@{ub} = Wheel ON + Buttons ON + 40ms polling (very smooth)
+  0x13 = Wheel ON + Buttons ON + 10ms polling (recommended)
+  0x03 = Wheel OFF + Buttons ON + 10ms polling
+  0x11 = Wheel ON + Buttons OFF + 10ms polling
+  0x31 = Wheel ON + Buttons ON + 5ms polling (snappier)
+  0x51 = Wheel ON + Buttons ON + 20ms polling (smoother)
+  0x91 = Wheel ON + Buttons ON + 40ms polling (very smooth)
 
 See the Configuration section for the complete bit breakdown.
 
-@{b}Hot Configuration@{ub}
+Hot Configuration
 
-One of XMouse's best features: change configuration @{b}without restarting@{ub}!
+One of XMouse's best features: change configuration without restarting!
 
 1. Start the daemon:
-   @{i}C:xmouse@{ui}
+   C:xmouse
 
 2. Later, change config by running with new byte:
-   @{i}C:xmouse 0x31@{ui}
+   C:xmouse 0x31
 
 The running daemon receives your new config and updates instantly.
 No CTRL+C needed, no service interruption.
 
-@ENDNODE
+@endnode
 
 
-@NODE Config "Configuration - The Config Byte Explained"
+@node Config "Configuration - The Config Byte Explained"
+@prev Usage
+@next Build
 
-XMouse uses a single @{b}8-bit configuration byte@{ub} to control all
+XMouse uses a single 8-bit configuration byte to control all
 behavior. This makes it simple, fast, and easy to hot-update.
 
-@{b}Bit Layout:@{ub}
+Bit Layout:
 
   Bit 7 (0x80) = Debug Mode
     1 = Open debug console window (dev builds only)
@@ -162,14 +201,12 @@ behavior. This makes it simple, fast, and easy to hot-update.
 
   Bit 6-5 = Poll Interval
     00 = 5ms   (very responsive, ~1% CPU)
-    01 = 10ms  (balanced, ~0.5% CPU) ← default
+    01 = 10ms  (balanced, ~0.5% CPU) <- default
     10 = 20ms  (smooth, ~0.25% CPU)
     11 = 40ms  (relaxed, ~0.1% CPU)
 
   Bit 4 = Reserved (must be 0)
-
   Bit 3 = Reserved (must be 0)
-
   Bit 2 = Reserved (must be 0)
 
   Bit 1 = Extra Buttons (4th & 5th buttons)
@@ -180,7 +217,7 @@ behavior. This makes it simple, fast, and easy to hot-update.
     1 = Wheel scrolling active
     0 = Wheel disabled
 
-@{b}Examples:@{ub}
+Examples:
 
   0x13 = 0001 0011 binary
     Wheel ON, Buttons ON, 10ms polling, Debug OFF
@@ -201,7 +238,7 @@ behavior. This makes it simple, fast, and easy to hot-update.
   0x03 = 0000 0011 binary
     Wheel OFF, Buttons ON, 10ms polling (buttons only)
 
-@{b}Building Your Own Byte@{ub}
+Building Your Own Byte
 
 To calculate a config byte:
 1. Start with 0x00
@@ -213,12 +250,68 @@ To calculate a config byte:
 Example: Wheel + Buttons + 20ms + no debug
   = 0x01 + 0x02 + 0x40 = 0x43
 
-@ENDNODE
+@endnode
 
 
-@NODE Technical "Technical Details"
+@node Build "Building from Source"
+@prev Config
+@next Technical
 
-@{b}How XMouse Works@{ub}
+XMouse is written in C using the VBCC compiler for m68k-amigaos.
+
+Requirements
+
+  * VBCC m68k-amigaos toolchain
+  * AmigaOS NDK39 (or compatible headers)
+  * GNU make
+  * PowerShell (for setup script on Windows)
+
+Quick Start
+
+On Windows (first time only):
+  .\setup.ps1
+
+This pulls the VBCC compiler and NDK if not already present.
+
+Then compile:
+  make
+
+Output executable: dist/xmouse
+
+Build Options
+
+Release build (optimized, no debug):
+  make MODE=release
+
+Clean build artifacts:
+  make clean
+
+Upload to Vampire (if configured):
+  make upload
+
+Compiler Flags
+
+  -O3 -speed -sc -schedule
+    Optimized for 68080 speed
+  -cpu=68080
+    Target 68080 in Apollo accelerators
+  -DRELEASE (release builds only)
+    Disables debug console code
+
+Source Files
+
+  * src/xmouse.c - Main daemon implementation (887 lines)
+  * include/newmouse.h - NewMouse standard constants
+  * Makefile - Build configuration
+
+@endnode
+
+
+@node Technical "Technical Details"
+@prev Build
+@next Troubleshooting
+
+How XMouse Works
 
 XMouse monitors the SAGA chipset's wheel counter register at regular
 intervals (default 10ms). When it detects wheel movement, it injects
@@ -228,22 +321,22 @@ Unlike traditional mouse drivers, XMouse:
 - Runs as a resident daemon (no device driver complexity)
 - Uses message ports for IPC (can be configured without restart)
 - Polls at regular intervals instead of interrupt-driven
-- Sends dual IECLASS_RAWKEY and IECLASS_NEWMOUSE events for compatibility
+- Sends dual IECLASS_RAWKEY and IECLASS_NEWMOUSE events
 
-@{b}Supported Hardware@{ub}
+Supported Hardware
 
 XMouse requires a SAGA-equipped Apollo accelerator:
-  • Apollo Firebird V4
-  • Apollo Icedrake
-  • Apollo Manticore
-  • Apollo Salamander
-  • Apollo Phoenix
-  • A6000 Unicorn
+  * Apollo Firebird V4
+  * Apollo Icedrake
+  * Apollo Manticore
+  * Apollo Salamander
+  * Apollo Phoenix
+  * A6000 Unicorn
 
 Note: Vampire V2 has SAGA but no USB mouse port. Vampire V4
 is not officially SAGA-equipped but may work in some configurations.
 
-@{b}Polling vs Interrupts@{ub}
+Polling vs Interrupts
 
 XMouse uses polling (timed checks) rather than interrupts. This is
 intentional:
@@ -259,13 +352,13 @@ intentional:
   - ~100ms wheel event latency in worst case
   - Perfectly smooth in practice due to batching
 
-@{b}CPU Overhead@{ub}
+CPU Overhead
 
 Measured on Vampire V4:
-  • 5ms polling: ~1.0% CPU
-  • 10ms polling: ~0.5% CPU (recommended)
-  • 20ms polling: ~0.25% CPU
-  • 40ms polling: ~0.1% CPU
+  * 5ms polling: ~1.0% CPU
+  * 10ms polling: ~0.5% CPU (recommended)
+  * 20ms polling: ~0.25% CPU
+  * 40ms polling: ~0.1% CPU
 
 For comparison: FreeWheel (full GUI commodity) ~2-3% CPU,
 OptMouse (classic serial driver) ~0.3% CPU.
@@ -273,7 +366,7 @@ OptMouse (classic serial driver) ~0.3% CPU.
 XMouse's 0.5% default is a good balance between responsiveness
 and system load.
 
-@{b}Wheel Counter Behavior@{ub}
+Wheel Counter Behavior
 
 The SAGA wheel counter at register 0xDFF213 is a signed 8-bit value
 that wraps at 127/-128 boundaries. XMouse detects wrapping as large
@@ -282,177 +375,198 @@ deltas and interprets them correctly:
   If delta > 127: actual delta = delta - 256 (wrapped backward)
   If delta < -128: actual delta = delta + 256 (wrapped forward)
 
-@{b}Binary Size@{ub}
+Binary Size
 
 XMouse executable: ~7.4 KB
 
 This size includes:
-  • Daemon process management
-  • Message port IPC system
-  • Hot configuration support
-  • Debug console infrastructure
+  - Daemon process management
+  - Message port IPC system
+  - Hot configuration support
+  - Debug console infrastructure
 
 Compared to:
-  • OptMouse (serial driver): 3.5 KB (simpler, load-stay-resident)
-  • FreeWheel (full commodity): 38 KB (includes GUI and prefs)
+  - OptMouse (serial driver): 3.5 KB (simpler, load-stay-resident)
+  - FreeWheel (full commodity): 38 KB (includes GUI and prefs)
 
-@ENDNODE
-
-
-@NODE Build "Building from Source"
-
-XMouse is written in C using the VBCC compiler for m68k-amigaos.
-
-@{b}Requirements@{ub}
-
-  • VBCC m68k-amigaos toolchain
-  • AmigaOS NDK39 (or compatible headers)
-  • GNU make
-  • PowerShell (for setup script on Windows)
-
-@{b}Quick Start@{ub}
-
-On Windows (first time only):
-  @{i}.\setup.ps1@{ui}
-
-This pulls the VBCC compiler and NDK if not already present.
-
-Then compile:
-  @{i}make@{ui}
-
-Output executable: @{b}dist/xmouse@{ub}
-
-@{b}Build Options@{ub}
-
-Release build (optimized, no debug):
-  @{i}make MODE=release@{ui}
-
-Clean build artifacts:
-  @{i}make clean@{ui}
-
-Upload to Vampire (if configured):
-  @{i}make upload@{ui}
-
-@{b}Compiler Flags@{ub}
-
-  -O3 -speed -sc -schedule
-    Optimized for 68080 speed
-  -cpu=68080
-    Target 68080 in Apollo accelerators
-  -DRELEASE (release builds only)
-    Disables debug console code
-
-@{b}Source Files@{ub}
-
-  • src/xmouse.c - Main daemon implementation (887 lines)
-  • include/newmouse.h - NewMouse standard constants
-  • Makefile - Build configuration
-
-@ENDNODE
+@endnode
 
 
-@NODE Troubleshooting "Common Problems & Solutions"
+@node Troubleshooting "Common Problems & Solutions"
+@prev Technical
+@next HISTORY
 
-@{b}Wheel doesn't scroll@{ub}
+Wheel doesn't scroll
 
-@{i}Problem:@{ui} Wheel moves but nothing scrolls.
+Problem: Wheel moves but nothing scrolls.
 
-@{i}Check:@{ui}
+Check:
   1. Is XMouse running?
-     Type: @{b}C:xmouse@{ub}
+     Type: C:xmouse
      If it says "XMouse is already running", you're good.
-     
+
   2. Is wheel enabled in config?
-     Type: @{b}C:xmouse 0x13@{ub} to force wheel ON.
-     
+     Type: C:xmouse 0x13 to force wheel ON.
+
   3. Does the active window support scrolling?
      Not all applications support scroll events. Try Workbench or
      a terminal window.
-     
+
   4. Try resetting with debug on:
-     @{b}C:xmouse STOP@{ub}
-     @{b}C:xmouse 0x93@{ub} (includes debug console)
-     
+     C:xmouse STOP
+     C:xmouse 0x93 (includes debug console)
+
      Watch the debug output for wheel events.
 
-@{b}Daemon won't start@{ub}
+Daemon won't start
 
-@{i}Problem:@{ui} Running @{b}C:xmouse@{ub} does nothing or gives errors.
+Problem: Running C:xmouse does nothing or gives errors.
 
-@{i}Solutions:@{ui}
+Solutions:
   1. Check you have the right hardware:
      XMouse requires a SAGA-equipped Apollo accelerator.
      Classic Amigas and some older Vampire boards won't work.
-     
+
   2. Ensure Exec is accessible:
      XMouse needs exec.library and input.device.
      This is standard on any AmigaOS 3.x system.
-     
+
   3. Try from the Shell:
      Avoid double-clicking the icon; run from a Shell window
      to see any error messages.
 
-@{b}High CPU usage@{ub}
+High CPU usage
 
-@{i}Problem:@{ui} System feels slow after starting XMouse.
+Problem: System feels slow after starting XMouse.
 
-@{i}Solutions:@{ui}
+Solutions:
   1. Reduce polling rate:
-     @{b}C:xmouse 0x51@{ub} (20ms polling instead of default 10ms)
-     or @{b}C:xmouse 0x91@{ub} (40ms polling for very relaxed mode)
-     
+     C:xmouse 0x51 (20ms polling instead of default 10ms)
+     or C:xmouse 0x91 (40ms polling for very relaxed mode)
+
   2. Verify hardware:
      Make sure you're on a real Apollo, not an unsupported board.
-     
+
   3. Check for conflicts:
      If other mouse-related utilities are running, they may conflict.
 
-@{b}Buttons 4 & 5 don't work@{ub}
+Buttons 4 & 5 don't work
 
-@{i}Problem:@{ui} Button support is enabled but buttons don't respond.
+Problem: Button support is enabled but buttons don't respond.
 
-@{i}Status:@{ui}
+Status:
   Buttons 4 & 5 are in development. Basic infrastructure is in place,
   but detection and event injection may need refinement on some hardware.
-  
+
   Please report detailed findings to the XMouse maintainers.
 
-@{b}Need to uninstall@{ub}
+Need to uninstall
 
 Simply:
-  1. @{b}C:xmouse STOP@{ub} to cleanly shut down the daemon
-  
-  2. Delete @{b}C:xmouse@{ub} executable
-  
-  3. If it was in @{b}S:User-Startup@{ub}, remove the line:
-     @{i}C:xmouse 0x13@{ui}
+  1. C:xmouse STOP to cleanly shut down the daemon
+
+  2. Delete C:xmouse executable
+
+  3. If it was in S:User-Startup, remove the line:
+     C:xmouse 0x13
 
 That's it! No reboot needed.
 
-@ENDNODE
+@endnode
 
 
-@NODE HISTORY "Version History"
+@node HISTORY "Version History"
+@prev Troubleshooting
+@next MAIN
+ic infrastructure is in place,
+  but detection and event injection may need refinement on some hardware.
 
-@{b}Version 1.0 (December 2024)@{ub}
+  Please report detailed findings to the XMouse maintainers.
+
+Need to uninstall
+
+Simply:
+  1. C:xmouse STOP to cleanly shut down the daemon
+
+  2. Delete C:xmouse executable
+
+  3. If it was in S:User-Startup, remove the line:
+     C:xmouse 0x13
+
+That's it! No reboot needed.
+
+@endnode
+
+
+@node HISTORY "Version History"
+@prev Troubleshooting
+@next MAIN
+ic infrastructure is in place,
+  but detection and event injection may need refinement on some hardware.
+
+  Please report detailed findings to the XMouse maintainers.
+
+Need to uninstall
+
+Simply:
+  1. C:xmouse STOP to cleanly shut down the daemon
+
+  2. Delete C:xmouse executable
+
+  3. If it was in S:User-Startup, remove the line:
+     C:xmouse 0x13
+
+That's it! No reboot needed.
+
+@endnode
+
+
+@node HISTORY "Version History"
+@prev Troubleshooting
+@next MAIN
+ic infrastructure is in p2025,
+  but detection and event injection may need refinement on some hardware.
+
+  Please report detailed findings to the XMouse maintainers.
+
+Need to uninstall
+
+Simply:
+  1. C:xmouse STOP to cleanly shut down the daemon
+
+  2. Delete C:xmouse executable
+
+  3. If it was in S:User-Startup, remove the line:
+     C:xmouse 0x13
+
+That's it! No reboot needed.
+
+@endnode
+
+
+@node HISTORY "Version History"
+@prev Troubleshooting
+@next MAIN
+
+Version 1.0 (December 2025)
 
   Initial release.
-  
-  Features:
-  • Minimal mouse wheel daemon for SAGA chipset
-  • Hot configuration (no restart needed)
-  • Configurable polling rates (5/10/20/40ms)
-  • Message port IPC system
-  • Debug console for development
-  • ~0.5% CPU at default 10ms polling
-  • 7.4 KB executable
-  
-  Hardware:
-  • Apollo Firebird V4, Icedrake, Manticore, Salamander, Phoenix
-  • A6000 Unicorn
-  
-  Status:
-  • Wheel support: Complete and tested
-  • Buttons 4 & 5: Infrastructure in place, refinement in progress
 
-@ENDNODE
+  Features:
+  * Minimal mouse wheel daemon for SAGA chipset
+  * Hot configuration (no restart needed)
+  * Configurable polling rates (5/10/20/40ms)
+  * Message port IPC system
+  * Debug console for development
+  * ~0.5% CPU at default 10ms polling
+  * 7.4 KB executable
+
+  Hardware:
+  * Apollo Firebird V4, Icedrake, Manticore, Salamander, Phoenix
+  * A6000 Unicorn
+
+  Status:
+  * Wheel support: Complete and tested
+  * Buttons 4 & 5: Infrastructure in place, refinement in progress
+
+@endnode
