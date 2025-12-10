@@ -39,12 +39,9 @@ C_INCL_VBCC = $(VBCC)/targets/m68k-amigaos/include
 # NDK 3.9
 C_INCL_NDK39 = $(NDK39)/Include/include_h
 
-# Newmouse
-C_INCL_NM = $(VENDOR_DIR)/newmouse/newmouse.h
-
 # --- Includes ---	
 #C_INCL_ALL = -I$(SRC_DIR) -I$(INCLUDE_DIR)  -I$(C_INCL_NDK39) -I$(C_INCL_NM)
-C_INCL_ALL = -I$(C_INCL_VBCC) -I$(C_INCL_NDK39) -I$(SRC_DIR) -I$(INCLUDE_DIR) -I$(C_INCL_NM)
+C_INCL_ALL = -I$(C_INCL_VBCC) -I$(C_INCL_NDK39) -I$(SRC_DIR) -I$(INCLUDE_DIR) -I$(NEWMOUSE_INC)
 
 # --- Optimization ---
 # List of all supported CPUs
