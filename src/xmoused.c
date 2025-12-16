@@ -1,3 +1,18 @@
+/*
+ * XMouseD - eXtended Mouse Driver for Apollo 68080 SAGA Hardware
+ *
+ * Light daemon for Vampire/Apollo SAGA chipset mouse wheel and
+ * extra buttons (4/5) support. Polls hardware registers and injects
+ * input events with adaptive or fixed polling intervals.
+ *
+ * (c) 2025 Vincent Buzzano
+ * Licensed under MIT License
+ *
+ * Version: 1.0-beta2
+ * Date: 16.12.2025
+ * Email: reddoc007@gmail.com
+ */
+
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include <proto/input.h>
@@ -17,7 +32,7 @@
 #define APP_NAME            "XMouseD"
 #define APP_VERSION         "1.0-beta1"
 #define APP_DATE            "10.12.2025"
-#define APP_AUTHOR          "Vincent Buzzano (aka ReddoC)"
+#define APP_AUTHOR          "Vincent Buzzano"
 #define APP_EMAIL           "reddoc007@gmail.com"
 #define APP_DESCRIPTION     "SAGA Daemon Driver"
 
@@ -326,7 +341,7 @@ LONG _start(void)
     // Create background process using WBM pattern
     if (CreateNewProcTags(
         NP_Entry, (ULONG)daemon,
-        NP_Name, (ULONG)"XMouse - SAGA - Daemon",
+        NP_Name, (ULONG)APP_NAME" - SAGA - Daemon",
         NP_Priority, 0,
         TAG_DONE))
     {
@@ -495,7 +510,7 @@ static void daemon(void)
         // Open debug console if debug mode enabled
         if (s_configByte & CONFIG_DEBUG_MODE)
         {
-            s_debugCon = Open("CON:0/0/640/200/XMouse Debug/AUTO/CLOSE/WAIT", MODE_NEWFILE);
+            s_debugCon = Open("CON:0/0/640/200/"APP_NAME" Debug/AUTO/CLOSE/WAIT", MODE_NEWFILE);
             
             DebugLog("daemon started");
             DebugLogF("Mode: %s", getModeName(s_configByte));
@@ -599,7 +614,7 @@ static void daemon(void)
                                     // Debug mode enabled - open console
                                     if (!s_debugCon)
                                     {
-                                        s_debugCon = Open("CON:0/0/640/200/XMouse Debug/AUTO/CLOSE/WAIT", MODE_NEWFILE);
+                                        s_debugCon = Open("CON:0/0/640/200/"APP_NAME" Debug/AUTO/CLOSE/WAIT", MODE_NEWFILE);
                                         DebugLog("Debug mode enabled");
                                     }
                                 }
