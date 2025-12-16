@@ -2,7 +2,7 @@
 ; $VER: XMouse 1.0 (15.12.2025)
 
 (complete 0)
-(set @app-name "XMouse")
+(set @app-name "XMouse SAGA Daemon")
 (set @default-dest "C:")
 
 (complete 3)
@@ -28,12 +28,12 @@
 ; ========================================
 
 (copyfiles
-  (prompt "Copying xmouse executable...")
+  (prompt "Copying XMouse SAGA Daemon executable...")
   (help @copyfiles-help)
   (confirm "expert")
-  (source "XMouse")
+  (source "XMouseD")
   (dest #dest-cmd)
-  (choices "XMouse")
+  (choices "XMouseD")
   (infos)
 )
 
@@ -44,7 +44,7 @@
 
 (set #dest-help
   (askdir
-    (prompt "Where should the XMouse.guide documentation be installed?\n(usually Help: or HELP:)")
+    (prompt "Where should the XMouseD.guide documentation be installed?\n(usually Help: or HELP:)")
     (help @askdir-help)
     (default "HELP:")
   )
@@ -56,12 +56,12 @@
 ; ========================================
 
 (copyfiles
-  (prompt "Copying XMouse.guide documentation...")
+  (prompt "Copying XMouseD.guide documentation...")
   (help @copyfiles-help)
   (confirm "expert")
-  (source "XMouse.guide")
+  (source "XMouseD.guide")
   (dest #dest-help)
-  (choices "XMouse.guide")
+  (choices "XMouseD.guide")
   (infos)
 )
 
@@ -72,7 +72,7 @@
 
 (set #startup-add
   (askchoice
-    (prompt "Add xmouse to your User-Startup script?\n\nThis will make XMouse start automatically every time your Amiga boots, with default configuration (wheel + buttons, 10ms polling).\n\nYou can edit User-Startup later to change the configuration.")
+    (prompt "Add XMouse SAGA Daemon to your User-Startup script?\n\nThis will make the daemon start automatically every time your Amiga boots, with default configuration (wheel + buttons, 10ms polling).\n\nYou can edit User-Startup later to change the configuration.")
     (help @askchoice-help)
     (choices
       "Yes - Add to User-Startup"
@@ -119,17 +119,17 @@
 
 (complete 95)
 ; Add to User-Startup using startup command (safe append)
-(startup "XMouse"
-  (prompt "Adding XMouse to User-Startup...")
+(startup "XMouseD"
+  (prompt "Adding XMouse SAGA Daemon to User-Startup...")
   (help @startup-help)
-  (command "C:XMouse >NIL:\n")
+  (command "C:XMouseD >NIL:\n")
 )
 
 )
 ; else show warning
 (
 
-(message "Warning: Could not find " #startup-path "\n\nYou can manually add this line to your User-Startup script:\n\nC:XMouse >NIL:\n\nThis will make XMouse start at boot time.")
+(message "Warning: Could not find " #startup-path "\n\nYou can manually add this line to your User-Startup script:\n\nC:XMouseD >NIL:\n\nThis will make the daemon start at boot time.")
 
 )
 ) ; End if startup-exists
@@ -142,4 +142,4 @@
 ; ========================================
 (complete 100)
 ; youpi ^^
-(exit "Installation Complete!\nXMouse has been successfully installed.")
+(exit "Installation Complete!\nXMouse SAGA Daemon has been successfully installed.")

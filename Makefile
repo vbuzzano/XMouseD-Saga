@@ -128,8 +128,8 @@ upload: $(EXE)
 	@echo ------------------------------------------------------------------
 	@echo ApolloExplorer Upload
 	@$(ACP) $(EXECMDPATH) "$(APOLLO_V4_HOST)"
-	@$(ACP) $(GUIDEPATH) "$(APOLLO_V4_HOST)"
-	@$(ACP) $(INSTALLPATH) "$(APOLLO_V4_HOST)"
+#	@$(ACP) $(GUIDEPATH) "$(APOLLO_V4_HOST)"
+#	@$(ACP) $(INSTALLPATH) "$(APOLLO_V4_HOST)"
 	@$(ACP) $(GDB) "$(APOLLO_V4_HOST)"
 	@echo bgdbserver $(EXE_NAME) > $(EXECMDPATH)_Debug
 	@$(ACP) $(EXECMDPATH)_Debug "$(APOLLO_V4_HOST)"

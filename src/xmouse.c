@@ -14,12 +14,12 @@
 // Application Constants                                                     
 //===========================================================================
 
-#define APP_NAME            "XMouse SAGA"
+#define APP_NAME            "XMouseD"
 #define APP_VERSION         "1.0-beta1"
 #define APP_DATE            "10.12.2025"
 #define APP_AUTHOR          "Vincent Buzzano (aka ReddoC)"
 #define APP_EMAIL           "reddoc007@gmail.com"
-#define APP_DESCRIPTION     "SAGA Extended Mouse Support"
+#define APP_DESCRIPTION     "SAGA Daemon Driver"
 
 
 //===========================================================================
@@ -85,9 +85,7 @@
 
 #define CONFIG_STOP (CONFIG_WHEEL_ENABLED | CONFIG_BUTTONS_ENABLED)
 
-#ifndef RELEASE
-    #define CONFIG_DEBUG_MODE       0x80    // Bit 7: Debug mode (0b10000000)  
-#endif
+#define CONFIG_DEBUG_MODE       0x80    // Bit 7: Debug mode (0b10000000)  
 
 #define DEFAULT_CONFIG_BYTE     0x13    // Default: Wheel ON, Buttons ON, BALANCED mode (01), Debug OFF (0b00010011)
 
@@ -125,13 +123,14 @@ static struct InputEvent s_eventBuf;   // Reusable event buffer
 #define PROFILE_NAME_COMFORT    "COMFORT"
 #define PROFILE_NAME_BALANCED   "BALANCED"
 #define PROFILE_NAME_REACTIVE   "REACTIVE"
+#define PROFILE_NAME_ECO        "ECO"
 
 // Fixed mode names (when bit 6 = 1)
 #define MODE_NAME_MODERATE      "MODERATE"   // COMFORT fixed (20ms)
 #define MODE_NAME_ACTIVE        "ACTIVE"     // BALANCED fixed (10ms)
 #define MODE_NAME_INTENSIVE     "INTENSIVE"  // REACTIVE fixed (5ms)
-
-// Adaptive profile configuration
+#define MODE_NAME_PASSIVE       "PASSIVE"    // ECO fixed (40ms)
+// Adaptive mode configuration
 typedef struct
 {
     const char *dynamicName;  // Dynamic mode name (COMFORT, BALANCED, REACTIVE)
@@ -143,44 +142,31 @@ typedef struct
     ULONG stepIncUs;          // Microseconds to increment per tick (TO_IDLE → IDLE)
     ULONG activeThreshold;    // Microseconds of inactivity before transitioning from ACTIVE to TO_IDLE (human grace period)
     ULONG idleThreshold;      // Microseconds of inactivity before transitioning from BURST to TO_IDLE
-} AdaptiveProfile;
+} AdaptiveMode;
 
-// Profile table indexed by config bits 4-5
-// 3 profiles x 2 modes (dynamic/fixed via bit 6) = 6 total modes:
-//   Dynamic (bit6=0): COMFORT, BALANCED, REACTIVE
-//   Fixed (bit6=1):   MODERATE (20ms), ACTIVE (10ms), INTENSIVE (5ms)
-static const AdaptiveProfile s_adaptiveProfiles[] = 
+// Mode table indexed by config bits 4-5
+// 4 base modes x 2 variants (dynamic/fixed via bit 6) = 8 total modes:
+//   Dynamic (bit6=0): COMFORT, BALANCED, REACTIVE, ECO
+//   Fixed (bit6=1):   MODERATE (20ms), ACTIVE (10ms), INTENSIVE (5ms), PASSIVE (40ms)
+static const AdaptiveMode s_adaptiveModes[] = 
 {
     // COMFORT (00): Relaxed, tolerant
-    // Dynamic: 150→60→20ms | Fixed: 20ms (MODERATE)
-    // stepDecUs=1000 (1ms/tick): 90+40=130 ticks @ avg ~40ms = ~5.2s to burst (slow, comfortable)
-    // stepIncUs=2000 (2ms/tick): 90+40=65 ticks @ avg ~40ms = ~2.6s to idle (moderate return)
-    // activeThreshold=500000us (500ms human grace period - same real time for all modes)
-    // idleThreshold=500000us (500ms before TO_IDLE from BURST)
-    // CPU: near 0% idle (dynamic) | ~0.2% constant (fixed)
     { PROFILE_NAME_COMFORT, MODE_NAME_MODERATE, 150000, 60000, 20000, 1100, 15000, 500000, 500000 },
     
     // BALANCED (01): Balanced, universal - DEFAULT
-    // Dynamic: 100→30→10ms | Fixed: 10ms (ACTIVE)
-    // stepDecUs=1000 (1ms/tick): 70+20=90 ticks @ avg ~20ms = ~1.8s to burst (balanced)
-    // stepIncUs=4000 (4ms/tick): 70+20=22.5 ticks @ avg ~20ms = ~0.45s to idle (fast return)
-    // activeThreshold=500000us (500ms human grace period - same real time for all modes)
-    // idleThreshold=500000us (500ms before TO_IDLE from BURST)
-    // CPU: 0.1-0.2% idle (dynamic) | ~0.1% constant (fixed)
     { PROFILE_NAME_BALANCED, MODE_NAME_ACTIVE, 100000, 30000, 10000, 600, 1200, 500000, 1500000 },
     
     // REACTIVE (10): Nervous, snappy
-    // Dynamic: 50→15→5ms | Fixed: 5ms (INTENSIVE)
-    // stepDecUs=1500 (1.5ms/tick): 35+10=30 ticks @ avg ~10ms = ~0.3s to burst (ultra-fast)
-    // stepIncUs=1000 (1ms/tick): 35+10=45 ticks @ avg ~10ms = ~0.45s to idle (fast return)
-    // activeThreshold=500000us (500ms human grace period - same real time for all modes)
-    // idleThreshold=2000000us (2s before TO_IDLE from BURST)
-    // CPU: 0.2% idle (dynamic) | ~0.24% constant (fixed)
-    { PROFILE_NAME_REACTIVE, MODE_NAME_INTENSIVE, 50000, 15000, 5000, 500, 250, 500000, 3000000 }
+    { PROFILE_NAME_REACTIVE, MODE_NAME_INTENSIVE, 50000, 15000, 5000, 500, 250, 500000, 3000000 },
+
+    // ECO (11): Low-power/quiet
+    // Dynamic: 200→80→40ms | Fixed: 40ms (PASSIVE)
+    // stepDecUs=2000, stepIncUs=4000, thresholds: 500ms/1.5s
+    { PROFILE_NAME_ECO, MODE_NAME_PASSIVE, 200000, 80000, 40000, 2000, 4000, 500000, 1500000 }
 };
 
 // Adaptive state variables
-static const AdaptiveProfile *s_activeProfile = NULL;
+static const AdaptiveMode *s_activeMode = NULL;
 static UBYTE s_adaptiveState = POLL_STATE_IDLE;     // Current polling state
 static ULONG s_adaptiveInterval = 0;                    // Current polling interval (microseconds)
 static ULONG s_adaptiveInactive = 0;                   // Accumulated inactive time (microseconds)
@@ -200,7 +186,7 @@ struct XMouseMsg
 #endif
 
 // Version string - uses APP_* macros
-const char version[] = "$VER: " APP_NAME " " APP_VERSION " (" APP_DATE ") " APP_DESCRIPTION " (c) " APP_AUTHOR " <" APP_EMAIL ">";
+const char version[] = "$VER: " APP_NAME " " APP_VERSION " (" APP_DATE ") " APP_DESCRIPTION " (c) " APP_AUTHOR;
 
 
 //===========================================================================
@@ -210,6 +196,7 @@ const char version[] = "$VER: " APP_NAME " " APP_VERSION " (" APP_DATE ") " APP_
 static ULONG sendDaemonMessage(struct MsgPort *port, UBYTE cmd, ULONG value);
 static inline int parseHexDigit(UBYTE c);
 static inline BYTE parseArguments(void);
+static inline const char* getModeName(UBYTE configByte);
 
 
 static void daemon(void);
@@ -258,6 +245,9 @@ static inline ULONG getAdaptiveInterval(BOOL hadActivity);
             Flush(s_debugCon); \
             SelectOutput(_old); \
         }
+#else
+    #define DebugLog(fmt) {}
+    #define DebugLogF(fmt, ...) {}
 #endif
 
 
@@ -305,7 +295,10 @@ LONG _start(void)
         if (s_configByte != DEFAULT_CONFIG_BYTE)
         {
             sendDaemonMessage(existingPort, XMSG_CMD_SET_CONFIG, s_configByte);
-            PrintF("config updated to 0x%02lx", (ULONG)s_configByte);
+            if (s_configByte & CONFIG_DEBUG_MODE)
+            {
+                PrintF("config updated to 0x%02lx", (ULONG)s_configByte);
+            }
         }
         else
         {
@@ -459,29 +452,18 @@ static inline BYTE parseArguments(void)
             // Store config byte for daemon to use
             s_configByte = configByte;
             
-#ifndef RELEASE
-            // Display config info (profile determined in daemon_Init)
+            // Display config info
             {
-                UBYTE profileIndex = (configByte & CONFIG_INTERVAL_MASK) >> CONFIG_INTERVAL_SHIFT;
-                const char *profileNames[] = {PROFILE_NAME_COMFORT, PROFILE_NAME_BALANCED, PROFILE_NAME_REACTIVE};
-                const char *modeNames[] = {MODE_NAME_MODERATE, MODE_NAME_ACTIVE, MODE_NAME_INTENSIVE};
-                
-                // Validate profile index
-                if (profileIndex > 2) {
-                    profileIndex = 1;  // Default to BALANCED
-                }
-                
-                PrintF("starting with config: 0x%02lx", (ULONG)configByte);
-                PrintF("  Wheel: %s", (configByte & CONFIG_WHEEL_ENABLED) ? "ON" : "OFF");
-                PrintF("  Extra buttons: %s", (configByte & CONFIG_BUTTONS_ENABLED) ? "ON" : "OFF");
-                
-                if (configByte & CONFIG_FIXED_MODE) {
-                    PrintF("  Profile: %s (fixed)", modeNames[profileIndex]);
-                } else {
-                    PrintF("  Profile: %s (dynamic)", profileNames[profileIndex]);
+#ifndef RELEASE
+                PrintF("config: 0x%02lx", (ULONG)configByte);
+                PrintF("wheel: %s", (configByte & CONFIG_WHEEL_ENABLED) ? "ON" : "OFF");
+                PrintF("extra buttons: %s", (configByte & CONFIG_BUTTONS_ENABLED) ? "ON" : "OFF");
+#endif
+                if (configByte & CONFIG_DEBUG_MODE)
+                {
+                    PrintF("mode: %s", getModeName(configByte));
                 }
             }
-#endif
 
             return START_MODE_START;
         }
@@ -515,30 +497,22 @@ static void daemon(void)
         {
             s_debugCon = Open("CON:0/0/640/200/XMouse Debug/AUTO/CLOSE/WAIT", MODE_NEWFILE);
             
-            // Log injection method being used
             DebugLog("daemon started");
-            //DebugLog("Mode: IECLASS_RAWKEY/NEWMOUSE");
+            DebugLogF("Mode: %s", getModeName(s_configByte));
             
-            // Display mode name
             if (s_configByte & CONFIG_FIXED_MODE)
             {
-                // Fixed mode: use fixedName from profile
-                DebugLogF("Mode: %s (fixed %ldms)", 
-                          s_activeProfile->fixedName, 
-                          (LONG)(s_pollInterval / 1000));
+                DebugLogF("Poll: %ldms (fixed)", (LONG)(s_pollInterval / 1000));
             }
             else
             {
-                // Dynamic mode: use dynamicName from profile
-                DebugLogF("Mode: %s (dynamic %ld->%ld->%ldms)", 
-                          s_activeProfile->dynamicName,
-                          (LONG)(s_activeProfile->idleUs / 1000),
-                          (LONG)(s_activeProfile->activeUs / 1000),
-                          (LONG)(s_activeProfile->burstUs / 1000));
+                DebugLogF("Poll: %ld->%ld->%ldms (dynamic)", 
+                          (LONG)(s_activeMode->idleUs / 1000),
+                          (LONG)(s_activeMode->activeUs / 1000),
+                          (LONG)(s_activeMode->burstUs / 1000));
             }
             
             DebugLog("---");
-            //DebugLog("Press Ctrl+C to quit");
         }
 #endif        
         TIMER_START(s_pollInterval);
@@ -578,32 +552,27 @@ static void daemon(void)
                                 s_configByte = newConfig;
                                 msg->result = s_configByte;
                                 
-                                // If profile or mode changed, reinitialize adaptive system
+                                // If mode changed, reinitialize adaptive system
                                 if (oldInterval != newInterval || 
                                     ((oldConfig ^ newConfig) & CONFIG_FIXED_MODE))
                                 {
-                                    UBYTE profileIndex = (newConfig & CONFIG_INTERVAL_MASK) >> CONFIG_INTERVAL_SHIFT;
-                                    
-                                    // Validate profile index (only 0-2 are valid)
-                                    if (profileIndex > 2) {
-                                        profileIndex = 1;  // Default to BALANCED if invalid
-                                    }
-                                    
-                                    s_activeProfile = &s_adaptiveProfiles[profileIndex];
+                                    UBYTE modeIndex = (newConfig & CONFIG_INTERVAL_MASK) >> CONFIG_INTERVAL_SHIFT;
+                                                                        
+                                    s_activeMode = &s_adaptiveModes[modeIndex % 4];
                                     
                                     // Reinitialize based on new mode
                                     if (newConfig & CONFIG_FIXED_MODE)
                                     {
                                         // Fixed mode: use burstUs
-                                        s_adaptiveInterval = s_activeProfile->burstUs;
-                                        s_pollInterval = s_activeProfile->burstUs;
+                                        s_adaptiveInterval = s_activeMode->burstUs;
+                                        s_pollInterval = s_activeMode->burstUs;
                                     }
                                     else
                                     {
                                         // Dynamic mode: start from idle
                                         s_adaptiveState = POLL_STATE_IDLE;
-                                        s_adaptiveInterval = s_activeProfile->idleUs;
-                                        s_pollInterval = s_activeProfile->idleUs;
+                                        s_adaptiveInterval = s_activeMode->idleUs;
+                                        s_pollInterval = s_activeMode->idleUs;
                                     }
                                     
                                     s_adaptiveInactive = 0;
@@ -872,7 +841,7 @@ static inline void daemon_processButtons(void)
  */
 static inline ULONG getAdaptiveInterval(BOOL hadActivity)
 {
-    const AdaptiveProfile *prof = s_activeProfile;
+    const AdaptiveMode *mode = s_activeMode;
     ULONG oldUs = s_adaptiveInterval;
     UBYTE oldState = s_adaptiveState;
     
@@ -894,7 +863,7 @@ static inline ULONG getAdaptiveInterval(BOOL hadActivity)
             {
                 // Jump to ACTIVE
                 s_adaptiveState = POLL_STATE_ACTIVE;
-                s_adaptiveInterval = prof->activeUs;
+                s_adaptiveInterval = mode->activeUs;
 
                 DebugLogF("[IDLE->ACTIVE] %ldus | InactiveUs=%ld", 
                           (LONG)s_adaptiveInterval, (LONG)s_adaptiveInactive);
@@ -905,16 +874,16 @@ static inline ULONG getAdaptiveInterval(BOOL hadActivity)
             if (hadActivity)
             {
                 // Descend toward BURST every tick with activity
-                if (s_adaptiveInterval > prof->burstUs)
+                if (s_adaptiveInterval > mode->burstUs)
                 {
-                    s_adaptiveInterval = (s_adaptiveInterval > prof->stepDecUs) ? (s_adaptiveInterval - prof->stepDecUs) : prof->burstUs;
+                    s_adaptiveInterval = (s_adaptiveInterval > mode->stepDecUs) ? (s_adaptiveInterval - mode->stepDecUs) : mode->burstUs;
                 }
                 
                 // Reached BURST floor?
-                if (s_adaptiveInterval <= prof->burstUs)
+                if (s_adaptiveInterval <= mode->burstUs)
                 {
                     s_adaptiveState = POLL_STATE_BURST;
-                    s_adaptiveInterval = prof->burstUs;
+                    s_adaptiveInterval = mode->burstUs;
                     DebugLogF("[ACTIVE->BURST] %ldus | InactiveUs=%ld", 
                               (LONG)s_adaptiveInterval, (LONG)s_adaptiveInactive);
                 }
@@ -922,7 +891,7 @@ static inline ULONG getAdaptiveInterval(BOOL hadActivity)
             else
             {
                 // Check accumulated inactivity in microseconds
-                if (s_adaptiveInactive >= prof->activeThreshold)
+                if (s_adaptiveInactive >= mode->activeThreshold)
                 {
                     s_adaptiveState = POLL_STATE_TO_IDLE;
                     DebugLogF("[ACTIVE->TO_IDLE] %ldus | InactiveUs=%ld", 
@@ -935,7 +904,7 @@ static inline ULONG getAdaptiveInterval(BOOL hadActivity)
             if (!hadActivity)
             {
                 // Check accumulated inactivity in microseconds
-                if (s_adaptiveInactive >= prof->idleThreshold)
+                if (s_adaptiveInactive >= mode->idleThreshold)
                 {
                     // Transition to TO_IDLE
                     s_adaptiveState = POLL_STATE_TO_IDLE;
@@ -949,9 +918,9 @@ static inline ULONG getAdaptiveInterval(BOOL hadActivity)
             if (hadActivity)
             {
                 // Return to ACTIVE
-                if (s_adaptiveInterval > prof->activeUs)
+                if (s_adaptiveInterval > mode->activeUs)
                 {
-                    s_adaptiveInterval = prof->activeUs;
+                    s_adaptiveInterval = mode->activeUs;
                 }
                 s_adaptiveState = POLL_STATE_ACTIVE;
                 DebugLogF("[TO_IDLE->ACTIVE] %ldus | InactiveUs=%ld", 
@@ -960,22 +929,22 @@ static inline ULONG getAdaptiveInterval(BOOL hadActivity)
             else
             {
                 // Ascend toward IDLE every tick without activity
-                if (s_adaptiveInterval < prof->idleUs)
+                if (s_adaptiveInterval < mode->idleUs)
                 {
-                    s_adaptiveInterval += prof->stepIncUs;
+                    s_adaptiveInterval += mode->stepIncUs;
                     
                     // Clamp to idleUs ceiling
-                    if (s_adaptiveInterval > prof->idleUs)
+                    if (s_adaptiveInterval > mode->idleUs)
                     {
-                        s_adaptiveInterval = prof->idleUs;
+                        s_adaptiveInterval = mode->idleUs;
                     }
                 }
                 
                 // Reached IDLE ceiling?
-                if (s_adaptiveInterval >= prof->idleUs)
+                if (s_adaptiveInterval >= mode->idleUs)
                 {
                     s_adaptiveState = POLL_STATE_IDLE;
-                    s_adaptiveInterval = prof->idleUs;
+                    s_adaptiveInterval = mode->idleUs;
                     DebugLogF("[TO_IDLE->IDLE] %ldus | InactiveUs=%ld", 
                               (LONG)s_adaptiveInterval, (LONG)s_adaptiveInactive);
                 }
@@ -1090,30 +1059,25 @@ static inline BOOL daemon_Init(void)
     }
     
     // Initialize adaptive polling system
-    {
-        UBYTE profileIndex = (s_configByte & CONFIG_INTERVAL_MASK) >> CONFIG_INTERVAL_SHIFT;
-        
-        // Validate profile index (only 0-2 are valid)
-        if (profileIndex > 2) {
-            profileIndex = 1;  // Default to BALANCED if invalid
-        }
-        
-        s_activeProfile = &s_adaptiveProfiles[profileIndex];
-        
+{
+        UBYTE modeIndex = ((s_configByte & CONFIG_INTERVAL_MASK) >> CONFIG_INTERVAL_SHIFT) % 4;
+                
+        s_activeMode = &s_adaptiveModes[modeIndex];
+
         // Check if fixed mode (bit 6)
         if (s_configByte & CONFIG_FIXED_MODE)
         {
             // Fixed mode: use burstUs constantly (no state machine)
             s_adaptiveState = POLL_STATE_IDLE;  // State unused in fixed mode
-            s_adaptiveInterval = s_activeProfile->burstUs;
-            s_pollInterval = s_activeProfile->burstUs;
+            s_adaptiveInterval = s_activeMode->burstUs;
+            s_pollInterval = s_activeMode->burstUs;
         }
         else
         {
             // Dynamic adaptive mode: start in IDLE
             s_adaptiveState = POLL_STATE_IDLE;
-            s_adaptiveInterval = s_activeProfile->idleUs;
-            s_pollInterval = s_activeProfile->idleUs;
+            s_adaptiveInterval = s_activeMode->idleUs;
+            s_pollInterval = s_activeMode->idleUs;
         }
         
         s_adaptiveInactive = 0;
@@ -1182,6 +1146,19 @@ static inline void daemon_Cleanup(void)
     {
         CloseLibrary((struct Library *)DOSBase);
     }
+}
+
+/**
+ * Get mode name from config byte.
+ * @param configByte Configuration byte
+ * @return Mode name string (dynamic or fixed variant)
+ */
+static inline const char* getModeName(UBYTE configByte)
+{
+    UBYTE modeIndex = ((configByte & CONFIG_INTERVAL_MASK) >> CONFIG_INTERVAL_SHIFT) % 4;
+    const AdaptiveMode *mode = &s_adaptiveModes[modeIndex];
+    
+    return (configByte & CONFIG_FIXED_MODE) ? mode->fixedName : mode->dynamicName;
 }
 
 /**

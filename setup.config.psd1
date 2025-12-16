@@ -30,7 +30,7 @@
         # MY_VAR = "my_value"
         APOLLO_V4_HOST = "10.0.0.168:Ram Disk"
         INSTALLPATH = "install"
-        GUIDEPATH = "readme.guide"
+        GUIDEPATH = "XMouseD.guide"
     }
 
     # ========================================================================
