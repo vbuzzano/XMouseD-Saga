@@ -95,7 +95,7 @@
 // Bits 2-3: Reserved
 #define CONFIG_INTERVAL_SHIFT   4       // Bits 4-5: Profile selection (00=COMFORT, 01=BALANCED, 10=REACTIVE)
 #define CONFIG_INTERVAL_MASK    0x30    // Profile mask (0b00110000)
-#define CONFIG_FIXED_MODE       0x40    // Bit 6: Fixed mode (0=dynamic, 1=fixed on burstUs) (0b01000000)
+#define CONFIG_FIXED_MODE       0x40    // Bit 6: Polling mode (0=adaptive, 1=normal/constant) (0b01000000)
 // Bit 7: Reserved (bit 7 use for dev debug mode )
 
 #define CONFIG_STOP (CONFIG_WHEEL_ENABLED | CONFIG_BUTTONS_ENABLED)
@@ -146,8 +146,8 @@ static struct InputEvent s_eventBuf;   // Reusable event buffer
 // Adaptive mode configuration
 typedef struct
 {
-    const char *dynamicName;  // Dynamic mode name (COMFORT, BALANCED, REACTIVE)
-    const char *fixedName;    // Fixed mode name (MODERATE, ACTIVE, INTENSIVE)
+    const char *adaptiveName;  // Adaptive mode name (COMFORT, BALANCED, REACTIVE, ECO)
+    const char *normalName;    // Normal mode name (MODERATE, ACTIVE, INTENSIVE, PASSIVE)
     ULONG idleUs;             // Target interval when idle (microseconds)
     ULONG activeUs;           // Target interval when active (microseconds)
     ULONG burstUs;            // Target interval during burst usage (microseconds)
@@ -158,9 +158,9 @@ typedef struct
 } AdaptiveMode;
 
 // Mode table indexed by config bits 4-5
-// 4 base modes x 2 variants (dynamic/fixed via bit 6) = 8 total modes:
-//   Dynamic (bit6=0): COMFORT, BALANCED, REACTIVE, ECO
-//   Fixed (bit6=1):   MODERATE (20ms), ACTIVE (10ms), INTENSIVE (5ms), PASSIVE (40ms)
+// 4 base modes x 2 variants (adaptive/normal via bit 6) = 8 total modes:
+//   Adaptive (bit6=0): COMFORT, BALANCED, REACTIVE, ECO
+//   Normal (bit6=1):   MODERATE (20ms), ACTIVE (10ms), INTENSIVE (5ms), PASSIVE (40ms)
 static const AdaptiveMode s_adaptiveModes[] = 
 {
     // COMFORT (00): Relaxed, tolerant
@@ -515,11 +515,11 @@ static void daemon(void)
             
             if (s_configByte & CONFIG_FIXED_MODE)
             {
-                DebugLogF("Poll: %ldms (fixed)", (LONG)(s_pollInterval / 1000));
+                DebugLogF("Poll: %ldms (normal)", (LONG)(s_pollInterval / 1000));
             }
             else
             {
-                DebugLogF("Poll: %ld->%ld->%ldms (dynamic)", 
+                DebugLogF("Poll: %ld->%ld->%ldms (adaptive)", 
                           (LONG)(s_activeMode->idleUs / 1000),
                           (LONG)(s_activeMode->activeUs / 1000),
                           (LONG)(s_activeMode->burstUs / 1000));
@@ -576,13 +576,13 @@ static void daemon(void)
                                     // Reinitialize based on new mode
                                     if (newConfig & CONFIG_FIXED_MODE)
                                     {
-                                        // Fixed mode: use burstUs
+                                        // Normal mode: use burstUs
                                         s_adaptiveInterval = s_activeMode->burstUs;
                                         s_pollInterval = s_activeMode->burstUs;
                                     }
                                     else
                                     {
-                                        // Dynamic mode: start from idle
+                                        // Adaptive mode: start from idle
                                         s_adaptiveState = POLL_STATE_IDLE;
                                         s_adaptiveInterval = s_activeMode->idleUs;
                                         s_pollInterval = s_activeMode->idleUs;
@@ -684,15 +684,15 @@ static void daemon(void)
                 }
 
                 // Update adaptive interval and restart timer
-                // Fixed mode: no adaptation, just restart timer with burstUs
+                // Normal mode: no adaptation, just restart timer with burstUs
                 if (s_configByte & CONFIG_FIXED_MODE)
                 {
-                    // Fixed mode: always use burstUs, no state machine
+                    // Normal mode: always use burstUs, no state machine
                     TIMER_START(s_pollInterval);
                 }
                 else
                 {
-                    // Dynamic mode: update adaptive interval
+                    // Adaptive mode: update adaptive interval
                     s_pollInterval = getAdaptiveInterval(hadActivity);
                     
                     // Always restart timer with updated interval
@@ -849,7 +849,7 @@ static inline void daemon_processButtons(void)
 /**
  * Update adaptive polling interval based on activity.
  * State machine: IDLE → ACTIVE → BURST → TO_IDLE → IDLE
- * Only called in dynamic mode (bit 6 = 0). Fixed mode bypasses this function.
+ * Only called in adaptive mode (bit 6 = 0). Normal mode bypasses this function.
  * @param hadActivity TRUE if wheel/button activity detected this tick
  */
 static inline ULONG getAdaptiveInterval(BOOL hadActivity)
@@ -1077,17 +1077,17 @@ static inline BOOL daemon_Init(void)
                 
         s_activeMode = &s_adaptiveModes[modeIndex];
 
-        // Check if fixed mode (bit 6)
+        // Check if normal mode (bit 6)
         if (s_configByte & CONFIG_FIXED_MODE)
         {
-            // Fixed mode: use burstUs constantly (no state machine)
-            s_adaptiveState = POLL_STATE_IDLE;  // State unused in fixed mode
+            // Normal mode: use burstUs constantly (no state machine)
+            s_adaptiveState = POLL_STATE_IDLE;  // State unused in normal mode
             s_adaptiveInterval = s_activeMode->burstUs;
             s_pollInterval = s_activeMode->burstUs;
         }
         else
         {
-            // Dynamic adaptive mode: start in IDLE
+            // Adaptive mode: start in IDLE
             s_adaptiveState = POLL_STATE_IDLE;
             s_adaptiveInterval = s_activeMode->idleUs;
             s_pollInterval = s_activeMode->idleUs;
@@ -1164,14 +1164,14 @@ static inline void daemon_Cleanup(void)
 /**
  * Get mode name from config byte.
  * @param configByte Configuration byte
- * @return Mode name string (dynamic or fixed variant)
+ * @return Mode name string (adaptive or normal variant)
  */
 static inline const char* getModeName(UBYTE configByte)
 {
     UBYTE modeIndex = ((configByte & CONFIG_INTERVAL_MASK) >> CONFIG_INTERVAL_SHIFT) % 4;
     const AdaptiveMode *mode = &s_adaptiveModes[modeIndex];
     
-    return (configByte & CONFIG_FIXED_MODE) ? mode->fixedName : mode->dynamicName;
+    return (configByte & CONFIG_FIXED_MODE) ? mode->normalName : mode->adaptiveName;
 }
 
 /**

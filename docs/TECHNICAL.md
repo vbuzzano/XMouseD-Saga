@@ -114,18 +114,18 @@ Codes used: `NM_WHEEL_UP/DOWN` (0x7A/0x7B), `NM_BUTTON_FOURTH/FIFTH` (0x7E/0x7F)
 ## Polling Modes
 
 **Config byte bit 6:**
-- `0` = **Dynamic** (adaptive, adjusts based on activity)
-- `1` = **Fixed** (constant interval)
+- `0` = **Adaptive** (adjusts polling interval based on activity)
+- `1` = **Normal** (constant interval)
 
-### Fixed Mode
+### Normal Mode
 
 Simple: `s_pollInterval = burstUs` (constant based on chosen profile).
 
 Available profiles (bits 4-5):
-- COMFORT: 20ms
-- BALANCED: 10ms (default)
-- REACTIVE: 5ms
-- ECO: 40ms
+- MODERATE: 20ms (COMFORT profile)
+- ACTIVE: 10ms (BALANCED profile, default)
+- INTENSIVE: 5ms (REACTIVE profile)
+- PASSIVE: 40ms (ECO profile)
 
 ### Adaptive Mode
 
@@ -197,7 +197,7 @@ struct XMouseMsg {
 xmoused 0x23  # Change config without restarting daemon
 ```
 
-Daemon detects mode change (dynamic↔fixed) or profile change, reinitializes adaptive system and restarts timer.
+Daemon detects mode change (adaptive↔normal) or profile change, reinitializes adaptive system and restarts timer.
 
 ---
 
@@ -242,12 +242,12 @@ OpenDevice(TIMERNAME, UNIT_VBLANK, ...)  // Frame-sync
 
 ### Restart Logic
 
-**Fixed mode:**
+**Normal mode:**
 ```c
 TIMER_START(s_pollInterval);  // Direct, constant interval
 ```
 
-**Dynamic mode:**
+**Adaptive mode:**
 ```c
 s_pollInterval = getAdaptiveInterval(hadActivity);
 AbortIO(s_TimerReq);   // Abort pending

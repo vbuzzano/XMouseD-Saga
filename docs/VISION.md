@@ -21,18 +21,19 @@ XMouseD is a **complementary driver** that adds:
 ## Timer-Based Polling
 
 **Considered**: Interrupt-driven (VBL, hardware IRQ)  
-**Chosen**: Adaptive timer polling (dynamic 5-150ms, default 10-100ms)
+**Chosen**: Adaptive timer polling (5-150ms adaptive, or constant rate)
 
 **Rationale**:
 - Simpler code (no IRQ handler)
 - Safer (no race conditions)
 - Sufficient for wheel/buttons (not realtime critical)
-- **Adaptive:** Low CPU impact at idle, responsive when active
+- **Adaptive mode:** Low CPU impact at idle, responsive when active
+- **Normal mode:** Constant polling for predictable behavior
 - Configurable responsiveness vs CPU trade-off (8 modes)
 
 > **New in v1.0:** Adaptive polling automatically adjusts frequency based on activity. 
 > Idle = slow poll (100ms), Active = medium (30ms), Burst = fast (10ms). 
-> Or choose fixed mode for constant interval.
+> Or choose normal mode for constant interval.
 
 ## VBCC Inline Pragmas
 
