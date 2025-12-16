@@ -1,50 +1,0 @@
-@database "test-basic"
-
-@node "test-document" "Test Document"
-@toc "test-document"
-@smartwrap
-@next "features"
-
-@{fg shine}@{b}Test Document@{ub}
-~~~~~~~~~~~~~~~@{fg text}
-
-
-This is a @{b}basic@{ub} test of the @{i}MD2AG@{ui} converter.@endnode
-
-@node "features" "Features"
-@toc "test-document"
-@smartwrap
-@prev "test-document"
-@next "another-section"
-
-@{b}Features@{ub}
-
-
-The converter supports:
-   - @{b}Bold text@{ub}
-   - @{i}Italic text@{ui}
-   - @{"Links" link "target-node"}@endnode
-
-@node "another-section" "Another Section"
-@toc "test-document"
-@smartwrap
-@prev "features"
-@next "subsection"
-
-@{b}Another Section@{ub}
-
-
-Here we have some **bold and @{i}italic@{ui} mixed** formatting.
-
-Check out the @{"documentation" link "help"} for more information.@endnode
-
-@node "subsection" "Subsection"
-@toc "test-document"
-@smartwrap
-@prev "another-section"
-
-@{b}Subsection@{ub}
-
-
-Even deeper nesting works!@endnode
-

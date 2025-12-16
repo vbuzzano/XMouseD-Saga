@@ -1,271 +1,0 @@
-@database "tier1-all"
-
-@node "tier-1-complete-test-suite" "Tier 1 Complete Test Suite"
-@toc "tier-1-complete-test-suite"
-@smartwrap
-@next "1-bold-formatting-t037-t021"
-
-@{fg shine}@{b}Tier 1 Complete Test Suite@{ub}
-~~~~~~~~~~~~~~~~~~~~~~~~~~@{fg text}
-
-
-This document tests ALL 13 Tier 1 Core Mappings from markdown-amigaguide-mapping-v3.md.@endnode
-
-@node "1-bold-formatting-t037-t021" "1. Bold Formatting (T037, T021)"
-@toc "tier-1-complete-test-suite"
-@smartwrap
-@prev "tier-1-complete-test-suite"
-@next "2-italic-formatting-t038-t022"
-
-@{b}1. Bold Formatting (T037, T021)@{ub}
-
-
-Standard bold: @{b}This is bold text@{ub}
-
-Styled bold: @{fg highlight}This is styled bold with highlight@{fg text}@endnode
-
-@node "2-italic-formatting-t038-t022" "2. Italic Formatting (T038, T022)"
-@toc "tier-1-complete-test-suite"
-@smartwrap
-@prev "1-bold-formatting-t037-t021"
-@next "3-combined-formatting-t039"
-
-@{b}2. Italic Formatting (T038, T022)@{ub}
-
-
-Standard italic: @{i}This is italic text@{ui}
-
-Styled italic: @{i}@{fg highlight}This is styled italic with highlight@{fg text}@{ui}@endnode
-
-@node "3-combined-formatting-t039" "3. Combined Formatting (T039)"
-@toc "tier-1-complete-test-suite"
-@smartwrap
-@prev "2-italic-formatting-t038-t022"
-@next "4-headers-t040-t046"
-
-@{b}3. Combined Formatting (T039)@{ub}
-
-
-Standard combined: @{b}@{i}This is bold and italic@{ui}@{ub}
-
-Styled combined: @{b}@{i}@{fg highlight}This is bold, italic, and highlighted@{fg text}@{ui}@{ub}@endnode
-
-@node "4-headers-t040-t046" "4. Headers (T040-T046)"
-@toc "tier-1-complete-test-suite"
-@smartwrap
-@prev "3-combined-formatting-t039"
-@next "h3-with-bold-formatting"
-
-@{b}4. Headers (T040-T046)@{ub}
-
-@endnode
-
-@node "h3-with-bold-formatting" "H3 with Bold Formatting"
-@toc "tier-1-complete-test-suite"
-@smartwrap
-@prev "4-headers-t040-t046"
-@next "h4-plain-text-header"
-
-@{b}H3 with Bold Formatting@{ub}
-
-@endnode
-
-@node "h4-plain-text-header" "H4 Plain Text Header"
-@toc "tier-1-complete-test-suite"
-@smartwrap
-@prev "h3-with-bold-formatting"
-@next "h5-plain-text-header"
-
-H4 Plain Text Header
-
-@endnode
-
-@node "h5-plain-text-header" "H5 Plain Text Header"
-@toc "tier-1-complete-test-suite"
-@smartwrap
-@prev "h4-plain-text-header"
-@next "h6-plain-text-header"
-
-H5 Plain Text Header
-
-@endnode
-
-@node "h6-plain-text-header" "H6 Plain Text Header"
-@toc "tier-1-complete-test-suite"
-@smartwrap
-@prev "h5-plain-text-header"
-@next "setext-style-h2"
-
-H6 Plain Text Header
-
-@endnode
-
-@node "setext-style-h2" "Setext Style H2"
-@toc "tier-1-complete-test-suite"
-@smartwrap
-@prev "h6-plain-text-header"
-@next "another-custom"
-
-@{b}Setext Style H2@{ub}
-
-@endnode
-
-@node "another-custom" "Custom ID Header [#](#custom-node)"
-@toc "tier-1-complete-test-suite"
-@smartwrap
-@prev "setext-style-h2"
-@next "5-lists-t047-t048"
-
-@{b}Custom ID Header [#](#custom-node)@{ub}
-
-@endnode
-
-@node "5-lists-t047-t048" "5. Lists (T047-T048)"
-@toc "tier-1-complete-test-suite"
-@smartwrap
-@prev "another-custom"
-@next "unordered-list"
-
-@{b}5. Lists (T047-T048)@{ub}
-
-@endnode
-
-@node "unordered-list" "Unordered List"
-@toc "tier-1-complete-test-suite"
-@smartwrap
-@prev "5-lists-t047-t048"
-@next "ordered-list"
-
-@{b}Unordered List@{ub}
-
-
-   - Level 1 item
-@{code}
- o Level 2 item (3 spaces)
-   * Level 3 item (5 spaces)
-@{plain}
-   - Another level 1 item@endnode
-
-@node "ordered-list" "Ordered List"
-@toc "tier-1-complete-test-suite"
-@smartwrap
-@prev "unordered-list"
-@next "6-blockquotes-t049-t050"
-
-@{b}Ordered List@{ub}
-
-
-   1. First item
-@{code}
- 2. Nested item (3 spaces)
-   3. Double nested (5 spaces)
-@{plain}
-   2. Second item@endnode
-
-@node "6-blockquotes-t049-t050" "6. Blockquotes (T049-T050)"
-@toc "tier-1-complete-test-suite"
-@smartwrap
-@prev "ordered-list"
-@next "7-horizontal-separators-t051-t052"
-
-@{b}6. Blockquotes (T049-T050)@{ub}
-
-
-@@{lindent 2}@@{fg shadow}This is a simple blockquote with indentation and shadow color.@@{lindent 0}@@{fg text}
-
-@@{lindent 4}@@{fg shadow}This is a nested blockquote with double indentation.@@{lindent 0}@@{fg text}@endnode
-
-@node "7-horizontal-separators-t051-t052" "7. Horizontal Separators (T051-T052)"
-@toc "tier-1-complete-test-suite"
-@smartwrap
-@prev "6-blockquotes-t049-t050"
-@next "8-paragraph-line-breaks-t053-t054"
-
-@{b}7. Horizontal Separators (T051-T052)@{ub}
-
-
-Three dashes separator:
-
-~~~~~~~~~~~~~~~
-
-Three underscores separator:
-
-_______________@endnode
-
-@node "8-paragraph-line-breaks-t053-t054" "8. Paragraph Line Breaks (T053-T054)"
-@toc "tier-1-complete-test-suite"
-@smartwrap
-@prev "7-horizontal-separators-t051-t052"
-@next "9-links-t055-t058"
-
-@{b}8. Paragraph Line Breaks (T053-T054)@{ub}
-
-
-This line ends with two spaces  
-And this line follows with a line break.
-
-This is a new paragraph with double blank line separation.@endnode
-
-@node "9-links-t055-t058" "9. Links (T055-T058)"
-@toc "tier-1-complete-test-suite"
-@smartwrap
-@prev "8-paragraph-line-breaks-t053-t054"
-@next "10-code-blocks-t059-t060"
-
-@{b}9. Links (T055-T058)@{ub}
-
-
-Standard link: @{"Visit GitHub" system "OpenURL https://github.com"} : https://github.com
-
-Internal link: @{"Go to Headers" link "headers"}
-
-Link with line number: @{"Check Line 10" link "example.guide/main" 10}
-
-Autolink: @endnode
-
-@node "10-code-blocks-t059-t060" "10. Code Blocks (T059-T060)"
-@toc "tier-1-complete-test-suite"
-@smartwrap
-@prev "9-links-t055-t058"
-@next "11-minimal-html-t061-t062"
-
-@{b}10. Code Blocks (T059-T060)@{ub}
-
-
-Fenced code block:
-
-@{code}
-function example() {
-    echo "Hello AmigaGuide"
-}
-@{plain}
-
-Indented code block:
-
-for i in 1..10
-    print i
-end
-@{plain}@endnode
-
-@node "11-minimal-html-t061-t062" "11. Minimal HTML (T061-T062)"
-@toc "tier-1-complete-test-suite"
-@smartwrap
-@prev "10-code-blocks-t059-t060"
-
-@{b}11. Minimal HTML (T061-T062)@{ub}
-
-
-HTML bold: @{b}This is HTML bold@{ub}
-
-HTML italic: @{i}This is HTML italic@{ui}
-
-HTML underline: @{u}This is underlined@{uu}
-
-HTML code: @{fg highlight}inline code snippet@{fg text}
-
-Ignored tags: This div is ignored Span ignored too
-
-~~~~~~~~~~~~~~~
-
-@{b}End of Tier 1 Test Suite@{ub} - All 13 core mappings tested.@endnode
-
