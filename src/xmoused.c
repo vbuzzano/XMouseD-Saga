@@ -358,45 +358,113 @@ LONG _start(void)
 }
 
 /**
- * Send a message to the daemon and wait for reply.
+ * Send a message to the daemon and wait for reply with timeout.
+ * If daemon doesn't reply within 2 seconds, returns error.
  * @param port Daemon's public port
  * @param cmd Command to send
  * @param value Command parameter
- * @return Result from daemon, or 0xFFFFFFFF on error
+ * @return Result from daemon, or 0xFFFFFFFF on timeout/error
  */
 static ULONG sendDaemonMessage(struct MsgPort *port, UBYTE cmd, ULONG value)
 {
-    struct MsgPort *replyPort;
-    struct XMouseMsg *msg;
-    ULONG result;
+    struct MsgPort *replyPort = NULL;
+    struct XMouseMsg *msg = NULL;
+    struct MsgPort *timerPort = NULL;
+    struct timerequest *timerReq = NULL;
+    ULONG result = 0xFFFFFFFF;
+    ULONG replySig, timerSig, signals;
     
+    // Create reply port
     replyPort = CreateMsgPort();
     if (!replyPort)
     {
-        return 0xFFFFFFFF;
+        goto cleanup;
     }
     
+    // Create timer for timeout (2 seconds)
+    timerPort = CreateMsgPort();
+    if (!timerPort)
+    {
+        goto cleanup;
+    }
+    timerReq = (struct timerequest *)CreateIORequest(timerPort, sizeof(struct timerequest));
+    if (!timerReq)
+    {
+        goto cleanup;
+    }
+    if (OpenDevice(TIMERNAME, UNIT_VBLANK, (struct IORequest *)timerReq, 0))
+    {
+        goto cleanup;
+    }
+    
+    // Allocate message
     msg = (struct XMouseMsg *)AllocMem(sizeof(struct XMouseMsg), MEMF_PUBLIC | MEMF_CLEAR);
     if (!msg)
     {
-        DeleteMsgPort(replyPort);
-        return 0xFFFFFFFF;
+        goto cleanup;
     }
     
+    // Setup message
     msg->msg.mn_Node.ln_Type = NT_MESSAGE;
     msg->msg.mn_Length = sizeof(struct XMouseMsg);
     msg->msg.mn_ReplyPort = replyPort;
     msg->command = cmd;
     msg->value = value;
     
+    // Send message to daemon
     PutMsg(port, (struct Message *)msg);
-    WaitPort(replyPort);
-    GetMsg(replyPort);
     
-    result = msg->result;
+    // Setup timeout: 2 seconds
+    timerReq->tr_node.io_Command = TR_ADDREQUEST;
+    timerReq->tr_time.tv_secs = 2;
+    timerReq->tr_time.tv_micro = 0;
+    SendIO((struct IORequest *)timerReq);
     
-    FreeMem(msg, sizeof(struct XMouseMsg));
-    DeleteMsgPort(replyPort);
+    // Wait for reply OR timeout
+    replySig = 1L << replyPort->mp_SigBit;
+    timerSig = 1L << timerPort->mp_SigBit;
+    signals = Wait(replySig | timerSig);
+    
+    if (signals & replySig)
+    {
+        // Reply received before timeout
+        GetMsg(replyPort);
+        result = msg->result;
+        
+        // Abort timer
+        AbortIO((struct IORequest *)timerReq);
+        WaitIO((struct IORequest *)timerReq);
+    }
+    else if (signals & timerSig)
+    {
+        // Timeout: daemon didn't respond
+        GetMsg(timerPort);
+        Print("ERROR: Daemon not responding (timeout)");
+        // Message is still pending in daemon - nothing we can do
+    }
+
+cleanup:
+    // Cleanup resources (safe even if NULL)
+    if (msg)
+    {
+        FreeMem(msg, sizeof(struct XMouseMsg));
+    }
+    if (timerReq)
+    {
+        if (timerReq->tr_node.io_Device)
+        {
+            CloseDevice((struct IORequest *)timerReq);
+        }
+        DeleteIORequest((struct IORequest *)timerReq);
+    }
+    if (timerPort)
+    {
+        DeleteMsgPort(timerPort);
+    }
+    if (replyPort)
+    {
+        DeleteMsgPort(replyPort);
+    }
     
     return result;
 }

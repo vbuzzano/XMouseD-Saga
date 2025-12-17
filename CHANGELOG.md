@@ -1,10 +1,16 @@
 # Changelog
 
-All notable changes to XMouse will be documented in this file.
+All notable changes to []($PROGRAM_NAME)XMouseD[]() will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+
+### Fixed
+- **C2: Timeout in sendDaemonMessage()**: Added 2-second timeout to prevent shell freeze if daemon crashes
+  - Uses timer.device + Wait() on multiple signals (replySig | timerSig)
+  - Returns 0xFFFFFFFF on timeout, prints error message
+  - Cleanup centralized with goto pattern
 
 ### Added
 - **Buttons 4 & 5 support**: Read SAGA register bits 8-9 at $DFF212
@@ -12,8 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - Event injection: NM_BUTTON_FOURTH (0x7E), NM_BUTTON_FIFTH (0x7F)
   - IECODE_UP_PREFIX (0x80) for release events
 - **Hot debug mode toggle**: Enable/disable debug console at runtime
-  - `xmouse 0x93` opens CON: window
-  - `xmouse 0x13` closes it (without restart)
+  - `XMouseD 0x93` opens CON: window
+  - `XMouseD 0x13` closes it (without restart)
 - Config byte system (0xBYTE) for startup configuration
   - Bit 0: Wheel enable/disable
   - Bit 1: Extra buttons enable/disable (buttons 4 & 5)
