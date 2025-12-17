@@ -6,3 +6,6 @@ if (Test-Path .env) {
         }
     }
 }
+
+# add directory script top path
+$env:PATH = "$pwd\scripts;$env:PATH;"
