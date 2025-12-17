@@ -1,8 +1,8 @@
-@database "XMouseD"
+@database "README"
 @smartwrap
 
-@node "xmoused" "Saga eXtended Mouse Daemon (XMouseD)"
-@toc "xmoused"
+@node "saga-extended-mouse-xmouse" "Saga eXtended Mouse Daemon (XMouseD)"
+@toc "saga-extended-mouse-xmouse"
 @next "compatibility"
 @{fg shine}@{b}Saga eXtended Mouse Daemon (XMouseD)@{ub}
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~@{fg text}
@@ -11,14 +11,14 @@ Minimal, efficient mouse wheel daemon (7.4 KB) for Vampire/Apollo SAGA chipset.
 XMouseD is a lightweight background daemon that monitors USB mouse wheel and button movements from the SAGA chipset hardware, then injects standard NewMouse-compatible scroll events into the Amiga input system. This allows any Amiga application to scroll using your mouse wheel without special drivers or modifications.@endnode
 
 @node "compatibility" "Compatibility"
-@toc "xmoused"
-@prev "xmoused"
+@toc "saga-extended-mouse-xmouse"
+@prev "saga-extended-mouse-xmouse"
 @next "works-on-saga-chipset-with-apollo-68080"
 @{b}Compatibility@{ub}
 @{b}SAGA Chipset Only@{ub}: XMouseD works exclusively on Apollo accelerators with SAGA chipset and 68080 processor. Not compatible with classic Amiga, other accelerators, or emulators.@endnode
 
 @node "works-on-saga-chipset-with-apollo-68080" "? Works On (SAGA Chipset with Apollo 68080)"
-@toc "xmoused"
+@toc "saga-extended-mouse-xmouse"
 @prev "compatibility"
 @next "compatible-recommended-os"
 @{b}? Works On (SAGA Chipset with Apollo 68080)@{ub}
@@ -37,7 +37,7 @@ XMouseD is a lightweight background daemon that monitors USB mouse wheel and but
 Requires USB mouse with scroll wheel (and extra buttons 4 & 5) connected to the mouse USB port.@endnode
 
 @node "compatible-recommended-os" "? Compatible & Recommended OS"
-@toc "xmoused"
+@toc "saga-extended-mouse-xmouse"
 @prev "works-on-saga-chipset-with-apollo-68080"
 @next "does-not-work-on"
 @{b}? Compatible & Recommended OS@{ub}
@@ -50,7 +50,7 @@ Requires USB mouse with scroll wheel (and extra buttons 4 & 5) connected to the 
 - @{b}AROS@{ub} (should work, ApolloOS is AROS-based)@endnode
 
 @node "does-not-work-on" "? Does NOT Work On"
-@toc "xmoused"
+@toc "saga-extended-mouse-xmouse"
 @prev "compatible-recommended-os"
 @next "quick-start-30-seconds"
 @{b}? Does NOT Work On@{ub}
@@ -65,14 +65,14 @@ Requires USB mouse with scroll wheel (and extra buttons 4 & 5) connected to the 
 - @{b}AmigaOS 4.x, MorphOS, AROS x86@{ub}@endnode
 
 @node "quick-start-30-seconds" "Quick Start (30 Seconds)"
-@toc "xmoused"
+@toc "saga-extended-mouse-xmouse"
 @prev "does-not-work-on"
 @next "installation"
 @{b}Quick Start (30 Seconds)@{ub}
 @endnode
 
 @node "installation" "Installation"
-@toc "xmoused"
+@toc "saga-extended-mouse-xmouse"
 @prev "quick-start-30-seconds"
 @next "usage-configuration"
 @{b}Installation@{ub}
@@ -278,9 +278,11 @@ See @{"LICENSE" link "LICENSE"} for full legal text.
 @{b}Support & Feedback@{ub}
 Found a bug? Have a feature request? Open an issue on GitHub or reach out to the Apollo community Discord.
 
-@{b}Author:@{ub} Vincent Buzzano (ReddoC)  
+@{b}Author:@{ub} ~ Vincent Buzzano [PROGRAM_AUTHOR]~
 
-@{b}Version:@{ub} 1.0-beta1  
+@{b}Version:@{ub} ~ 1.0.0 [PROGRAM_VERSION]~
 
-@{b}Updated:@{ub} December 10, 2025@endnode
+@{b}Updated:@{ub} ~ 2025-12-17 [PROGRAM_DATE]~
+
+@endnode
 

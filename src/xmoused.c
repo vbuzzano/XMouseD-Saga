@@ -1,5 +1,5 @@
 /*
- * XMouseD - eXtended Mouse Driver for Apollo 68080 SAGA Hardware
+ * XMouseD - Extended mouse driver daemon for Apollo 68080 SAGA chipset
  *
  * Light daemon for Vampire/Apollo SAGA chipset mouse wheel and
  * extra buttons (4/5) support. Polls hardware registers and injects
@@ -7,10 +7,6 @@
  *
  * (c) 2025 Vincent Buzzano
  * Licensed under MIT License
- *
- * Version: 1.0-beta2
- * Date: 16.12.2025
- * Email: reddoc007@gmail.com
  */
 
 #include <proto/exec.h>
@@ -24,37 +20,47 @@
 #include <dos/dosextens.h>
 #include <newmouse.h>
 
-
 //===========================================================================
 // Application Constants                                                     
 //===========================================================================
 
-#define APP_NAME            "XMouseD"
-#define APP_VERSION         "1.0-beta1"
-#define APP_DATE            "10.12.2025"
-#define APP_AUTHOR          "Vincent Buzzano"
-#define APP_EMAIL           "reddoc007@gmail.com"
-#define APP_DESCRIPTION     "SAGA Daemon Driver"
+// ---> BEGIN GENERATED PROGRAM_CONSTANTS
+#define PROGRAM_NAME "XMouseD"
+#define PROGRAM_VERSION "1.0"
+#define PROGRAM_DATE "2025-12-17"
+#define PROGRAM_AUTHOR "Vincent Buzzano"
+#define PROGRAM_DESC_SHORT "SAGA eXtended Mouse Driver"
+// <--- END GENERATED PROGRAM CONSTANTS
 
+// Changing port name breaks compatibility with third-party tools.
+#define DAEMON_PORT_NAME        "XMouseD_Port" // WARNING: Modify with caution!
+#define DAEMON_DESC_SHORT       PROGRAM_NAME" - SAGA - Daemon"
 
-//===========================================================================
-// LOG String Constants                                                      
-//===========================================================================
+// NORMAL Mode names
+#define MODE_NAME_MODERATE      "MODERATE"
+#define MODE_NAME_ACTIVE        "ACTIVE"
+#define MODE_NAME_INTENSIVE     "INTENSIVE"
+#define MODE_NAME_PASSIVE       "PASSIVE"
 
-// TODO: Transform each log string to constants vvvv HERRE vvvv
+// ADAPTIVE Mode names
+#define MODE_NAME_COMFORT       "COMFORT"
+#define MODE_NAME_BALANCED      "BALANCED"
+#define MODE_NAME_REACTIVE      "REACTIVE"
+#define MODE_NAME_ECO           "ECO"
 
-
+// $VERS: String
+#define VERSION_STRING "$VER: " \
+PROGRAM_NAME" "PROGRAM_VERSION" ("PROGRAM_DATE")" \
+PROGRAM_DESC_SHORT" (c) "PROGRAM_AUTHOR
 
 //===========================================================================
 // Newmouse button codes for extra buttons 4 & 5                             
 // not defined in standard newmouse.h                                        
 //===========================================================================
 
-// Button 5
 #ifndef NM_BUTTON_FIFTH
 #define NM_BUTTON_FIFTH     (0x7F)
 #endif
-
 
 //===========================================================================
 // SAGA USB Mouse Registers                                                  
@@ -71,8 +77,6 @@
 //===========================================================================
 // XMouse Daemon Definitions
 //===========================================================================
-
-#define XMOUSE_PORT_NAME        "XMouseD_Port"
 
 // Message commands for daemon control
 #define XMSG_CMD_QUIT           0   // Stop daemon
@@ -93,8 +97,8 @@
 #define CONFIG_WHEEL_ENABLED    0x01    // Bit 0: Wheel enabled (RawKey + NewMouse) (0b00000001)
 #define CONFIG_BUTTONS_ENABLED  0x02    // Bit 1: Extra buttons 4 & 5 enabled (0b00000010)
 // Bits 2-3: Reserved
-#define CONFIG_INTERVAL_SHIFT   4       // Bits 4-5: Profile selection (00=COMFORT, 01=BALANCED, 10=REACTIVE)
-#define CONFIG_INTERVAL_MASK    0x30    // Profile mask (0b00110000)
+#define CONFIG_INTERVAL_SHIFT   4       // Bits 4-5: Mode selection (00=COMFORT, 01=BALANCED, 10=REACTIVE)
+#define CONFIG_INTERVAL_MASK    0x30    // Mode mask (0b00110000)
 #define CONFIG_FIXED_MODE       0x40    // Bit 6: Polling mode (0=adaptive, 1=normal/constant) (0b01000000)
 // Bit 7: Reserved (bit 7 use for dev debug mode )
 
@@ -111,7 +115,7 @@
 
 struct ExecBase *SysBase;              // Exec base (absolute 4)
 struct DosLibrary *DOSBase;            // DOS library base
-//void *InputBase;                       // Input library base (for PeekQualifier inline pragma)
+//void *InputBase;                     // Input library base (for PeekQualifier inline pragma)
 struct Device * InputBase;
 static struct MsgPort *s_PublicPort;   // Singleton port
 static struct MsgPort *s_InputPort;    // Input device port
@@ -134,15 +138,6 @@ static struct InputEvent s_eventBuf;   // Reusable event buffer
 #define POLL_STATE_BURST     2  // Peak usage, interval = burstUs (floor)
 #define POLL_STATE_TO_IDLE   3  // Returning to idle, interval ascending toward idleUs
 
-// Profile names
-#define MODE_NAME_COMFORT       "COMFORT"
-#define MODE_NAME_BALANCED      "BALANCED"
-#define MODE_NAME_REACTIVE      "REACTIVE"
-#define MODE_NAME_ECO           "ECO"
-#define MODE_NAME_MODERATE      "MODERATE"   // COMFORT fixed (20ms)
-#define MODE_NAME_ACTIVE        "ACTIVE"     // BALANCED fixed (10ms)
-#define MODE_NAME_INTENSIVE     "INTENSIVE"  // REACTIVE fixed (5ms)
-#define MODE_NAME_PASSIVE       "PASSIVE"    // ECO fixed (40ms)
 // Adaptive mode configuration
 typedef struct
 {
@@ -199,7 +194,7 @@ struct XMouseMsg
 #endif
 
 // Version string - uses APP_* macros
-const char version[] = "$VER: " APP_NAME " " APP_VERSION " (" APP_DATE ") " APP_DESCRIPTION " (c) " APP_AUTHOR;
+const char version[] = VERSION_STRING;
 
 
 //===========================================================================
@@ -210,7 +205,6 @@ static ULONG sendDaemonMessage(struct MsgPort *port, UBYTE cmd, ULONG value);
 static inline int parseHexDigit(UBYTE c);
 static inline BYTE parseArguments(void);
 static inline const char* getModeName(UBYTE configByte);
-
 
 static void daemon(void);
 static BOOL daemon_Init(void);
@@ -259,8 +253,8 @@ static inline ULONG getAdaptiveInterval(BOOL hadActivity);
             SelectOutput(_old); \
         }
 #else
-    #define DebugLog(fmt) {}
-    #define DebugLogF(fmt, ...) {}
+    #define DebugLog(fmt)         {} // No-op
+    #define DebugLogF(fmt, ...)   {} // No-op  
 #endif
 
 
@@ -291,7 +285,7 @@ LONG _start(void)
 
     // Check if XMouse is already running
     Forbid();
-    existingPort = FindPort(XMOUSE_PORT_NAME);
+    existingPort = FindPort(DAEMON_PORT_NAME);
     Permit();
 
     if (startMode == START_MODE_STOP && !existingPort)
@@ -339,7 +333,7 @@ LONG _start(void)
     // Create background process using WBM pattern
     if (CreateNewProcTags(
         NP_Entry, (ULONG)daemon,
-        NP_Name, (ULONG)APP_NAME" - SAGA - Daemon",
+        NP_Name, (ULONG)DAEMON_DESC_SHORT,
         NP_Priority, 0,
         TAG_DONE))
     {
@@ -489,7 +483,7 @@ static inline BYTE parseArguments(void)
 
 
 //===========================================================================
-// Daemon thread functions
+// Daemon process functions
 //===========================================================================
 
 /**
@@ -508,7 +502,7 @@ static void daemon(void)
         // Open debug console if debug mode enabled
         if (s_configByte & CONFIG_DEBUG_MODE)
         {
-            s_debugCon = Open("CON:0/0/640/200/"APP_NAME" Debug/AUTO/CLOSE/WAIT", MODE_NEWFILE);
+            s_debugCon = Open("CON:0/0/640/200/"PROGRAM_NAME" Debug/AUTO/CLOSE/WAIT", MODE_NEWFILE);
             
             DebugLog("daemon started");
             DebugLogF("Mode: %s", getModeName(s_configByte));
@@ -612,7 +606,7 @@ static void daemon(void)
                                     // Debug mode enabled - open console
                                     if (!s_debugCon)
                                     {
-                                        s_debugCon = Open("CON:0/0/640/200/"APP_NAME" Debug/AUTO/CLOSE/WAIT", MODE_NEWFILE);
+                                        s_debugCon = Open("CON:0/0/640/200/"PROGRAM_NAME" Debug/AUTO/CLOSE/WAIT", MODE_NEWFILE);
                                         DebugLog("Debug mode enabled");
                                     }
                                 }
@@ -727,10 +721,8 @@ static void daemon(void)
  */
 static inline void injectEvent(struct InputEvent *ev)
 {
-#ifndef RELEASE
     //DebugLogF("  injectEvent: class=0x%02lx code=0x%02lx qualifier=0x%04lx", 
     //          (ULONG)ev->ie_Class, (ULONG)ev->ie_Code, (ULONG)ev->ie_Qualifier);
-#endif
     
     s_InputReq->io_Command = IND_WRITEEVENT;
     s_InputReq->io_Data = (APTR)ev;
@@ -773,13 +765,11 @@ static inline void daemon_processWheel(void)
             code = (delta > 0) ? NM_WHEEL_UP : NM_WHEEL_DOWN;
             count = (delta > 0) ? delta : -delta;  // abs(delta)
 
-#ifndef RELEASE
             // Log wheel event
             //DebugLogF("Wheel: delta=%ld dir=%s count=%ld", 
             //         (LONG)delta, 
             //         (code == NM_WHEEL_UP) ? "UP" : "DOWN", 
             //         (LONG)count);
-#endif
             
             // Reuse s_eventBuf (only ie_Code and ie_Class change)
             s_eventBuf.ie_Code = code;
@@ -815,9 +805,9 @@ static inline void daemon_processButtons(void)
         if (changed & SAGA_BUTTON4_MASK)
         {
             code = NM_BUTTON_FOURTH | ((current & SAGA_BUTTON4_MASK) ? 0 : IECODE_UP_PREFIX);
-#ifndef RELEASE
+        
             //DebugLogF("Button 4 %s", (current & SAGA_BUTTON4_MASK) ? "pressed" : "released");
-#endif
+
             s_eventBuf.ie_Code = code;
             
             s_eventBuf.ie_Class = IECLASS_RAWKEY;
@@ -830,9 +820,9 @@ static inline void daemon_processButtons(void)
         if (changed & SAGA_BUTTON5_MASK)
         {
             code = NM_BUTTON_FIFTH | ((current & SAGA_BUTTON5_MASK) ? 0 : IECODE_UP_PREFIX);
-#ifndef RELEASE
+
             //DebugLogF("Button 5 %s", (current & SAGA_BUTTON5_MASK) ? "pressed" : "released");
-#endif
+
             s_eventBuf.ie_Code = code;
             
             s_eventBuf.ie_Class = IECLASS_RAWKEY;
@@ -1010,7 +1000,7 @@ static inline BOOL daemon_Init(void)
     {
         return FALSE;
     }
-    s_PublicPort->mp_Node.ln_Name = XMOUSE_PORT_NAME;
+    s_PublicPort->mp_Node.ln_Name = DAEMON_PORT_NAME;
     s_PublicPort->mp_Node.ln_Pri = 0;
     AddPort(s_PublicPort);
 
