@@ -200,7 +200,7 @@ const char version[] = VERSION_STRING;
 // Function Prototypes
 //===========================================================================
 
-static ULONG sendDaemonMessage(struct MsgPort *port, UBYTE cmd, ULONG value);
+static BOOL sendDaemonMessage(struct MsgPort *port, UBYTE cmd, ULONG value);
 static inline int parseHexDigit(UBYTE c);
 static inline BYTE parseArguments(void);
 static inline const char* getModeName(UBYTE configByte);
@@ -272,13 +272,12 @@ LONG _start(void)
     struct MsgPort *existingPort = NULL;
     struct Process *proc = NULL;
     struct CommandLineInterface *cli = NULL;
+    LONG exitCode = RETURN_OK;
     
     SysBase = *(struct ExecBase **)4L;
     DOSBase = (struct DosLibrary *)OpenLibrary("dos.library", 36);
-    if (!DOSBase)
-    {
-        return RETURN_FAIL;
-    }
+    if (!DOSBase) { return RETURN_FAIL; }
+
     // check if should start or stop the daemon
     BYTE startMode = parseArguments();
 
@@ -291,8 +290,7 @@ LONG _start(void)
     {
         // Not running, nothing to do
         Print("daemon is not running");
-        CloseLibrary((struct Library *)DOSBase);
-        return RETURN_OK;
+        goto cleanup;
     }
 
     if (startMode == START_MODE_START && existingPort)
@@ -300,30 +298,35 @@ LONG _start(void)
         // Already running with config byte → update config instead of error
         if (s_configByte != DEFAULT_CONFIG_BYTE)
         {
-            sendDaemonMessage(existingPort, XMSG_CMD_SET_CONFIG, s_configByte);
-            if (s_configByte & CONFIG_DEBUG_MODE)
+            if(sendDaemonMessage(existingPort, XMSG_CMD_SET_CONFIG, s_configByte))
             {
-                PrintF("config updated to 0x%02lx", (ULONG)s_configByte);
+                if (s_configByte & CONFIG_DEBUG_MODE)
+                {
+                    PrintF("config updated to 0x%02lx", (ULONG)s_configByte);
+                }
+            }
+            else
+            {
+                Print("ERROR: Failed to update daemon config");
+                exitCode = RETURN_FAIL;
+                goto cleanup;
             }
         }
         else
         {
             Print("daemon already running");
         }
-        CloseLibrary((struct Library *)DOSBase);
-        return RETURN_OK;
+        goto cleanup;
     }
 
     if ((startMode == START_MODE_STOP || startMode == START_MODE_TOGGLE) && existingPort)
     {
         // Send QUIT message to daemon
         sendDaemonMessage(existingPort, XMSG_CMD_QUIT, 0);
-        CloseLibrary((struct Library *)DOSBase);
         Printf("stopping daemon...");
         // TODO: attendre réponse ?
         Print(" done.");
-        
-        return RETURN_OK;
+        goto cleanup;
     }
 
     // Start the daemon
@@ -346,31 +349,35 @@ LONG _start(void)
 
         // TODO: could wait for confirmation of startup via message port ?
         Print(" done.");
-
-        CloseLibrary((struct Library *)DOSBase);
-        return RETURN_OK;
+        goto cleanup;
     }
     
     Print("failed to start daemon");
-    CloseLibrary((struct Library *)DOSBase);
-    return RETURN_FAIL;
+    exitCode = RETURN_FAIL;
+
+cleanup:
+    if (DOSBase)
+    {
+        CloseLibrary((struct Library *)DOSBase);
+    }
+    return exitCode;
 }
 
 /**
  * Send a message to the daemon and wait for reply with timeout.
- * If daemon doesn't reply within 2 seconds, returns error.
+ * If daemon doesn't reply within 2 seconds, returns FALSE.
  * @param port Daemon's public port
  * @param cmd Command to send
  * @param value Command parameter
- * @return Result from daemon, or 0xFFFFFFFF on timeout/error
+ * @return TRUE on success, FALSE on timeout/error
  */
-static ULONG sendDaemonMessage(struct MsgPort *port, UBYTE cmd, ULONG value)
+static BOOL sendDaemonMessage(struct MsgPort *port, UBYTE cmd, ULONG value)
 {
     struct MsgPort *replyPort = NULL;
     struct XMouseMsg *msg = NULL;
     struct MsgPort *timerPort = NULL;
     struct timerequest *timerReq = NULL;
-    ULONG result = 0xFFFFFFFF;
+    BOOL success = FALSE;
     ULONG replySig, timerSig, signals;
     
     // Create reply port
@@ -428,7 +435,7 @@ static ULONG sendDaemonMessage(struct MsgPort *port, UBYTE cmd, ULONG value)
     {
         // Reply received before timeout
         GetMsg(replyPort);
-        result = msg->result;
+        success = (msg->result == 0);  // 0 = success in daemon
         
         // Abort timer
         AbortIO((struct IORequest *)timerReq);
@@ -465,7 +472,7 @@ cleanup:
         DeleteMsgPort(replyPort);
     }
     
-    return result;
+    return success;
 }
 
 /**
@@ -527,17 +534,17 @@ static inline BYTE parseArguments(void)
             s_configByte = configByte;
             
             // Display config info
-            {
 #ifndef RELEASE
+            {
                 PrintF("config: 0x%02lx", (ULONG)configByte);
                 PrintF("wheel: %s", (configByte & CONFIG_WHEEL_ENABLED) ? "ON" : "OFF");
                 PrintF("extra buttons: %s", (configByte & CONFIG_BUTTONS_ENABLED) ? "ON" : "OFF");
-#endif
                 if (configByte & CONFIG_DEBUG_MODE)
                 {
                     PrintF("mode: %s", getModeName(configByte));
                 }
             }
+#endif
 
             return START_MODE_START;
         }
@@ -736,20 +743,16 @@ static void daemon(void)
                 }
 
                 // Update adaptive interval and restart timer
-                // Normal mode: no adaptation, just restart timer with burstUs
                 if (s_configByte & CONFIG_FIXED_MODE)
                 {
-                    // Normal mode: always use burstUs, no state machine
+                    // Fixed mode: constant interval, direct restart
                     TIMER_START(s_pollInterval);
                 }
                 else
                 {
-                    // Adaptive mode: update adaptive interval
+                    // Adaptive mode: update interval and restart
+                    // No need for AbortIO/WaitIO here - timer already completed (we got the signal)
                     s_pollInterval = getAdaptiveInterval(hadActivity);
-                    
-                    // Always restart timer with updated interval
-                    AbortIO((struct IORequest *)s_TimerReq);
-                    WaitIO((struct IORequest *)s_TimerReq);
                     TIMER_START(s_pollInterval);
                 }
                 

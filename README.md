@@ -127,8 +127,6 @@ If []($PROGRAM_EXE_NAME)XMouseD[]() []($PROGRAM_EXE_NAME)XMouseD[]() is already 
 ```bash
 []($PROGRAM_EXE_NAME)XMouseD[]() 0x13         ; Start daemon or update config
 []($PROGRAM_EXE_NAME)XMouseD[]() 0x23         ; Switch to REACTIVE mode (no restart needed!)
-[]($PROGRAM_EXE_NAME)XMouseD[]() 0x93         ; Enable debug mode
-[]($PROGRAM_EXE_NAME)XMouseD[]() 0x13         ; Disable debug mode
 []($PROGRAM_EXE_NAME)XMouseD[]() 0x00         ; Stop daemon
 ```
 
@@ -158,15 +156,15 @@ Bits 4-6         - Modes:
                    101 = ACTIVE    (normal mode)
                    110 = INTENSIVE (normal mode)
                    111 = PASSIVE   (normal mode)
-Bit 7 (0x80)     - Debug mode (opens debug console)
+Bit 7            - Reserved (do not use)
 ```
 
 **Examples:**
 - `0x13` = Wheel ON, Buttons ON, BALANCED adaptive (default)
 - `0x53` = Wheel ON, Buttons ON, ACTIVE normal mode
-- `0x93` = Same as 0x13 but with debug console
 - `0x03` = Wheel ON, Buttons ON, COMFORT adaptive
 - `0x43` = Wheel ON, Buttons ON, MODERATE normal mode
+- `0x23` = Wheel ON, Buttons ON, REACTIVE adaptive
 
 
 ## How It Works (Simple)

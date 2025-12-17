@@ -69,8 +69,7 @@ You can change settings @{b}without restarting@{ub} the daemon!
 Example:
   ~ XMouseD [PROGRAM_EXE_NAME]~ 0x13             - Start in BALANCED mode
   ~ XMouseD [PROGRAM_EXE_NAME]~ 0x23             - Switch to REACTIVE mode (instant!)
-  ~ XMouseD [PROGRAM_EXE_NAME]~ 0x93             - Enable debug console
-  ~ XMouseD [PROGRAM_EXE_NAME]~ 0x13             - Disable debug
+  ~ XMouseD [PROGRAM_EXE_NAME]~ 0x53             - Switch to ACTIVE mode
 
 ~ XMouseD [PROGRAM_NAME]~ detects the running daemon and sends a configuration message
 instead of starting a new instance.
@@ -162,7 +161,7 @@ hot config update (no restart needed).
   @{b}Bit 1 (0x02)@{ub}  - Extra buttons 4 & 5 enabled
   @{b}Bits 2-3@{ub}     - Reserved (must be 0)
   @{b}Bits 4-6@{ub}     - Polling mode selection (see below)
-  @{b}Bit 7 (0x80)@{ub}  - Debug mode (console output)
+  @{b}Bit 7@{ub}        - Reserved (do not use)
 
 @{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
 
@@ -194,25 +193,10 @@ hot config update (no restart needed).
   @{b}0x53@{ub}  - Wheel ON, Buttons ON, ACTIVE normal (10ms)
   @{b}0x63@{ub}  - Wheel ON, Buttons ON, INTENSIVE normal (5ms)
   @{b}0x73@{ub}  - Wheel ON, Buttons ON, PASSIVE normal (40ms)
-  @{b}0x93@{ub}  - Same as 0x13 but with debug console enabled
   @{b}0x01@{ub}  - Wheel only, no buttons, COMFORT mode
   @{b}0x02@{ub}  - Buttons only, no wheel, COMFORT mode
 
 @{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
-
-@{b}Debug Mode (Bit 7)@{ub}
-
-When enabled (add 0x80 to any config), ~ XMouseD [PROGRAM_NAME]~ opens a debug console
-showing real-time activity:
-  • Poll count
-  • Wheel movement deltas
-  • Button presses
-  • Current polling interval
-
-Example: @{b}~ XMouseD [PROGRAM_EXE_NAME]~ 0x93@{ub} = BALANCED mode + debug console
-
-Useful for testing or troubleshooting. Press CTRL+C in the console
-window to stop the daemon.
 
 @endnode
 
@@ -301,11 +285,7 @@ protocol will recognize the wheel.
   2. Check if ~ XMouseD [PROGRAM_NAME]~ is running:
      • Run: @{b}~ XMouseD [PROGRAM_EXE_NAME]~@{ub} (should say "already running" or start)
 
-  3. Try debug mode to see activity:
-     • Run: @{b}~ XMouseD [PROGRAM_EXE_NAME]~ 0x93@{ub}
-     • Scroll the wheel and watch for delta values
-
-  4. Test with a different application
+  3. Test with a different application
      • Some apps may not support NewMouse wheel events
 
 @{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
@@ -348,15 +328,13 @@ Adaptive modes automatically reduce CPU usage when idle.
   2. Ensure bit 1 is enabled in config (0x02)
      • Example: @{b}~ XMouseD [PROGRAM_EXE_NAME]~ 0x13@{ub} has buttons enabled
      • @{b}~ XMouseD [PROGRAM_EXE_NAME]~ 0x11@{ub} would disable buttons
-  3. Check SAGA register $DFF212 bits 8-9 in debug mode
 
 @{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
 
 @{b}Still Having Issues?@{ub}
 
-  • Enable debug mode: @{b}~ XMouseD [PROGRAM_EXE_NAME]~ 0x93@{ub}
-  • Check console output for errors
-  • Report bugs on GitHub with debug log
+  • Report bugs on GitHub with detailed description
+  • Check SAGA register $DFF212 for hardware values
 
 @endnode
 

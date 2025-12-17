@@ -15,131 +15,6 @@
 
 ---
 ## Issues Majeures
-
-### M1. Fixed mode fait `AbortIO/WaitIO` inutile
-
-**Localisation:** `daemon()` main loop, ligne 674-687
-
-**Problème:**
-En mode fixed, l'intervalle est constant, donc `AbortIO()+WaitIO()` avant `TIMER_START()` est redondant.
-
-**Code problématique:**
-```c
-if (s_configByte & CONFIG_FIXED_MODE)
-{
-    // Fixed mode: always use burstUs, no state machine
-    TIMER_START(s_pollInterval);  // ← OK
-}
-else
-{
-    // Dynamic mode
-    s_pollInterval = getAdaptiveInterval(hadActivity);
-    
-    // Always restart timer with updated interval
-    AbortIO((struct IORequest *)s_TimerReq);  // ← Inutile en fixed!
-    WaitIO((struct IORequest *)s_TimerReq);
-    TIMER_START(s_pollInterval);
-}
-```
-
-**Impact:**
-- **Gaspillage CPU** (abort d'une IO qui va terminer naturellement)
-- **Latence ajoutée** (WaitIO synchrone)
-- **Code confusing** (pourquoi abort si interval constant?)
-
-**Solution:**
-Séparer clairement les deux paths:
-```c
-if (s_configByte & CONFIG_FIXED_MODE)
-{
-    // Fixed: restart directement (pas d'abort nécessaire)
-    TIMER_START(s_pollInterval);
-}
-else
-{
-    // Dynamic: abort puis restart avec nouvel interval
-    s_pollInterval = getAdaptiveInterval(hadActivity);
-    AbortIO((struct IORequest *)s_TimerReq);
-    WaitIO((struct IORequest *)s_TimerReq);
-    TIMER_START(s_pollInterval);
-}
-```
-
-**Priorité:** 🟠 MAJEURE - Impact performance
-
----
-
-### M2. Pas de limite sur `count` dans `daemon_processWheel()`
-
-**Localisation:** `daemon_processWheel()` ligne 718-736
-
-**Problème:**
-Si delta wheel énorme (bug hardware ou compteur wrappe multiple fois entre deux polls), loop injecte potentiellement 256 événements.
-
-**Code problématique:**
-```c
-count = (delta > 0) ? delta : -delta;  // abs(delta)
-
-// Repeat events based on delta magnitude
-for (i = 0; i < count; i++)
-{
-    // Injecte RAWKEY + NEWMOUSE
-    // Si count = 200 → 400 DoIO() calls!
-}
-```
-
-**Impact:**
-- **Flood input.device** avec centaines d'événements
-- **Lag système** (DoIO synchrone x 400)
-- **Scroll incontrôlable** dans applications
-
-**Solution:**
-Clamper le count max:
-```c
-#define MAX_WHEEL_EVENTS_PER_TICK 10
-
-count = (delta > 0) ? delta : -delta;
-if (count > MAX_WHEEL_EVENTS_PER_TICK) {
-    DebugLogF("WARNING: Wheel delta clamped from %ld to %ld", 
-              (LONG)count, (LONG)MAX_WHEEL_EVENTS_PER_TICK);
-    count = MAX_WHEEL_EVENTS_PER_TICK;
-}
-```
-
-**Priorité:** 🟠 MAJEURE - Peut freezer le système
-
----
-
-### M3. Valeur de retour `sendDaemonMessage()` jamais vérifiée
-
-**Localisation:** Tous les appels à `sendDaemonMessage()` dans `_start()`
-
-**Problème:**
-La fonction retourne `0xFFFFFFFF` en cas d'erreur (alloc fail), mais l'appelant ignore complètement la valeur.
-
-**Code problématique:**
-```c
-// Dans _start():
-sendDaemonMessage(existingPort, XMSG_CMD_SET_CONFIG, s_configByte);
-// ↑ Pas de check si succès ou échec
-```
-
-**Impact:**
-- **Échec silencieux** - utilisateur pense config changée alors que non
-- **Confusion** - comportement ne correspond pas à commande
-
-**Solution:**
-```c
-ULONG result = sendDaemonMessage(existingPort, XMSG_CMD_SET_CONFIG, s_configByte);
-if (result == 0xFFFFFFFF) {
-    Print("ERROR: Failed to update daemon config");
-    CloseLibrary((struct Library *)DOSBase);
-    return RETURN_FAIL;
-}
-```
-
-**Priorité:** 🟠 MAJEURE - UX dégradée
-
 ---
 
 ### M4. `PrintF()` appelé en mode RELEASE sans protection
@@ -151,22 +26,44 @@ En mode RELEASE, `PrintF()` est appelé sans vérifier si console disponible (pe
 
 **Code problématique:**
 ```c
+### M4. `PrintF()` appelé en mode RELEASE sans protection
+
+**Localisation:** `parseArguments()` ligne ~545
+
+**Problème:**
+En mode RELEASE, `PrintF()` est appelé sans vérifier si console disponible (peut crasher si lancé depuis Workbench).
+
+**Code actuel:**
+```c
 #ifndef RELEASE
     PrintF("config: 0x%02lx", (ULONG)configByte);
-    // ...
+    PrintF("wheel: %s", (configByte & CONFIG_WHEEL_ENABLED) ? "ON" : "OFF");
+    PrintF("extra buttons: %s", (configByte & CONFIG_BUTTONS_ENABLED) ? "ON" : "OFF");
 #endif
-if (configByte & CONFIG_DEBUG_MODE)
+if (configByte & CONFIG_DEBUG_MODE)  // ← CONFIG_DEBUG_MODE actif en RELEASE!
 {
-    PrintF("mode: %s", getModeName(configByte));  // ← Pas protégé RELEASE!
+    PrintF("mode: %s", getModeName(configByte));  // ← Pas protégé!
 }
 ```
 
-**Impact:**
-- **Crash si pas de console** (Workbench launch)
-- **Inconsistency** - certains logs protégés, pas tous
+**Explication du problème:**
 
-**Solution:**
-Protéger tous les `PrintF()` ou vérifier `Output()` avant appel:
+1. **CONFIG_DEBUG_MODE (bit 7)** est un flag utilisateur (dans le byte de config 0xNN)
+2. **RELEASE** est un flag de compilation (`make MODE=release`)
+3. Ce sont deux choses **complètement différentes**!
+
+**Scénario crash:**
+- User compile en `MODE=release` → pas de console debug prévue
+- User lance depuis **Workbench** (double-clic icône) → `Output()` = NULL
+- User passe config `0x93` (bit7=1, debug mode activé)
+- Code appelle `PrintF("mode: %s", ...)` → **CRASH** car pas de console
+
+**Impact:**
+- 🔴 **Crash potentiel** si lancé depuis Workbench avec CONFIG_DEBUG_MODE
+- 🟡 **Inconsistency** - 3 premiers PrintF protégés par `#ifndef RELEASE`, le 4ème non
+- 🟡 **Confusion** - CONFIG_DEBUG_MODE devrait être inutile en RELEASE
+
+**Solution 1 (conservative):** Protéger le PrintF restant
 ```c
 #ifndef RELEASE
 if (configByte & CONFIG_DEBUG_MODE)
@@ -176,16 +73,21 @@ if (configByte & CONFIG_DEBUG_MODE)
 #endif
 ```
 
-**Priorité:** 🟠 MAJEURE - Peut crasher
+**Solution 2 (robuste):** Vérifier `Output()` avant tout PrintF en RELEASE
+```c
+if (configByte & CONFIG_DEBUG_MODE)
+{
+    BPTR out = Output();
+    if (out)  // ← Console existe?
+    {
+        PrintF("mode: %s", getModeName(configByte));
+    }
+}
+```
 
----
+**Recommandation:** Solution 1 (plus simple, cohérent avec les 3 autres PrintF)
 
-## Issues Mineures
-
-### m1. Variables statiques pas réinitialisées dans `daemon_Cleanup()`
-
-**Localisation:** `daemon_Cleanup()` ligne 1091-1143
-
+**Priorité:** 🟠 MAJEURE - Peut crasher en production
 **Problème:**
 Les pointeurs statiques (`s_PublicPort`, `s_InputPort`, etc.) ne sont pas mis à `NULL` après cleanup.
 
@@ -476,9 +378,6 @@ Soit faire le travail, soit créer issue GitHub, soit supprimer si non-prioritai
 ## Todo List - Plan de Correction
 
 ### 🟠 Majeures (Avant Release)
-- [ ] **M1** Séparer fixed/dynamic timer restart → perf
-- [ ] **M2** Clamper wheel event count max → flood prevention
-- [ ] **M3** Vérifier retour `sendDaemonMessage()` → UX
 - [ ] **M4** Protéger `PrintF()` RELEASE → crash prevention
 
 ### 🟡 Mineures (Avant 1.0 Final)
