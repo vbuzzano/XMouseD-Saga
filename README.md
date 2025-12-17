@@ -1,8 +1,8 @@
-# XMouseD
+# []($PROGRAM_NAME)XMouseD[]()
 
 Minimal, efficient mouse wheel and extra buttons driver for Vampire/Apollo 68080 SAGA chipset.
 
-XMouseD is a lightweight background daemon that monitors USB mouse wheel and button from the SAGA chipset hardware, then injects standard NewMouse-compatible scroll events into the Amiga input system. This allows Amiga programs to scroll using your mouse wheel without special drivers or modifications.
+[]($PROGRAM_NAME)XMouseD[]() is a lightweight background daemon that monitors USB mouse wheel and button from the SAGA chipset hardware, then injects standard NewMouse-compatible scroll events into the Amiga input system. This allows Amiga programs to scroll using your mouse wheel without special drivers or modifications.
 
 **Compatibility Note:** Also works with IControl preferences on AmigaOS 3.2, or use any commodity for wheel and extra mouse features like [FreeWheel](https://aminet.net/package/util/mouse/FreeWheel) from Aminet.
 
@@ -10,7 +10,7 @@ XMouseD is a lightweight background daemon that monitors USB mouse wheel and but
 
 ### ✅ Works On (SAGA Chipset with Apollo 68080)
 
-XMouseD requires Apollo 68080 accelerators with SAGA chipset and USB mouse port. Confirmed working on:
+[]($PROGRAM_NAME)XMouseD[]() requires Apollo 68080 accelerators with SAGA chipset and USB mouse port. Confirmed working on:
 
 - **Vampire V4 Standalone**
 - **A6000 Unicorn** <- not tested
@@ -27,7 +27,7 @@ Requires USB mouse with scroll wheel (and extra buttons 4 & 5) connected to the 
 
 ### ✅ Compatible & Recommended OS
 
-XMouseD is tested and supported on these operating systems:
+[]($PROGRAM_NAME)XMouseD[]() is tested and supported on these operating systems:
 
 - **AmigaOS 3.2** (recommended)
 - **AmigaOS 3.9** (with NDK 3.9 libraries)
@@ -37,7 +37,7 @@ XMouseD is tested and supported on these operating systems:
 
 ### ❌ Does NOT Work On
 
-XMouseD will NOT function on the following platforms (missing SAGA USB hardware):
+[]($PROGRAM_NAME)XMouseD[]() will NOT function on the following platforms (missing SAGA USB hardware):
 
 - **Vampire V2** (SAGA exists but no USB port for mouse hardware support)
 - **Classic Amiga** (A500, A1200, A4000, etc.)
@@ -45,52 +45,52 @@ XMouseD will NOT function on the following platforms (missing SAGA USB hardware)
 - **Other accelerators** (Blizzard, Apollo 1260, PiStorm)
 - **AmigaOS 4.x, MorphOS, AROS x86**
 
-> **SAGA Chipset Only**: XMouse works exclusively on Apollo accelerators with SAGA chipset and 68080 processor. Not compatible with classic Amiga, other accelerators, or emulators. 
+> **SAGA Chipset Only**: []($PROGRAM_NAME)XMouseD[]() works exclusively on Apollo accelerators with SAGA chipset and 68080 processor. Not compatible with classic Amiga, other accelerators, or emulators. 
 
 
 ## Installation
 
-XMouseD can be installed using the included Amiga Installer script or manually.
+[]($PROGRAM_NAME)XMouseD[]() can be installed using the included Amiga Installer script or manually.
 
 ### Method 1: Amiga Installer (Recommended)
 
-1. Download the XMouseD release archive
+1. Download the []($PROGRAM_NAME)XMouseD[]() release archive
 2. Extract to RAM: or any temporary location
 3. Double-click the **Install** icon
 4. Follow the on-screen prompts
 5. Reboot when installation completes
 
-The Installer will copy `XMouseD` to `C:` and add it to your `S:User-Startup` automatically.
+The Installer will copy `[]($PROGRAM_EXE_NAME)XMouseD[]()` to `C:` and add it to your `S:User-Startup` automatically.
 
 ### Method 2: Manual Installation
 
-1. Copy `XMouseD` to `C:` (or `SYS:C/`)
+1. Copy `[]($PROGRAM_EXE_NAME)XMouseD[]()` to `C:` (or `SYS:C/`)
 2. Add to `S:User-Startup`:
    ```
-   C:XMouseD >NIL:
+   C:[]($PROGRAM_EXE_NAME)XMouseD[]() >NIL:
    ```
-4. Restart or run `XMouseD` manually
+4. Restart or run `[]($PROGRAM_EXE_NAME)XMouseD[]()` manually
 
 
 ## Usage & Configuration
 
-XMouseD runs as a background daemon and can be controlled via command line arguments. Configuration uses a simple hex byte format.
+[]($PROGRAM_NAME)XMouseD[]() runs as a background daemon and can be controlled via command line arguments. Configuration uses a simple hex byte format.
 
 ### Basic Commands
 
-Start, stop, or toggle XMouseD with these commands:
+Start, stop, or toggle []($PROGRAM_EXE_NAME)XMouseD[]() with these commands:
 
 
 ```bash
-XMouseD              # Toggle (start if stopped, stop if running)
-XMouseD START        # Start with default config (wheel+buttons)
-XMouseD STOP         # Stop daemon gracefully
-XMouseD 0xBYTE       # Start with custom config byte 
+[]($PROGRAM_EXE_NAME)XMouseD[]()              # Toggle (start if stopped, stop if running)
+[]($PROGRAM_EXE_NAME)XMouseD[]() START        # Start with default config (wheel+buttons)
+[]($PROGRAM_EXE_NAME)XMouseD[]() STOP         # Stop daemon gracefully
+[]($PROGRAM_EXE_NAME)XMouseD[]() 0xBYTE       # Start with custom config byte 
 ```
 
 ### Configuration
 
-XMouseD supports two polling modes:
+[]($PROGRAM_NAME)XMouseD[]() supports two polling modes:
 
 **Adaptive Mode** - Smart polling that adjusts to your usage:
 - When idle (reading, thinking): polls slowly to save CPU
@@ -105,31 +105,31 @@ XMouseD supports two polling modes:
 Adaptive Modes (recommended):
 
 ```bash
-XMouseD 0x13         ; BALANCED (default, responsive for everyday use)
-XMouseD 0x03         ; COMFORT (occasional use, reactive when needed)
-XMouseD 0x23         ; REACTIVE (instant response, fast reactivity)
-XMouseD 0x33         ; ECO (minimal CPU, slower reactivity)
+[]($PROGRAM_EXE_NAME)XMouseD[]() 0x13         ; BALANCED (default, responsive for everyday use)
+[]($PROGRAM_EXE_NAME)XMouseD[]() 0x03         ; COMFORT (occasional use, reactive when needed)
+[]($PROGRAM_EXE_NAME)XMouseD[]() 0x23         ; REACTIVE (instant response, fast reactivity)
+[]($PROGRAM_EXE_NAME)XMouseD[]() 0x33         ; ECO (minimal CPU, slower reactivity)
 ```
 
 Normal Modes (constant reactivity):
 
 ```bash
-XMouseD 0x53         ; ACTIVE (medium reactivity)
-XMouseD 0x43         ; MODERATE (low reactivity)
-XMouseD 0x63         ; INTENSIVE (high reactivity)
-XMouseD 0x73         ; PASSIVE (very low reactivity)
+[]($PROGRAM_EXE_NAME)XMouseD[]() 0x53         ; ACTIVE (medium reactivity)
+[]($PROGRAM_EXE_NAME)XMouseD[]() 0x43         ; MODERATE (low reactivity)
+[]($PROGRAM_EXE_NAME)XMouseD[]() 0x63         ; INTENSIVE (high reactivity)
+[]($PROGRAM_EXE_NAME)XMouseD[]() 0x73         ; PASSIVE (very low reactivity)
 ```
 
 ### Hot Config Update
 
-If XMouse is already running, launch with a new config byte to update settings instantly:
+If []($PROGRAM_EXE_NAME)XMouseD[]() []($PROGRAM_EXE_NAME)XMouseD[]() is already running, launch with a new config byte to update settings instantly:
 
 ```bash
-XMouseD 0x13         ; Start daemon or update config
-XMouseD 0x23         ; Switch to REACTIVE mode (no restart needed!)
-XMouseD 0x93         ; Enable debug mode
-XMouseD 0x13         ; Disable debug mode
-XMouseD 0x00         ; Stop daemon
+[]($PROGRAM_EXE_NAME)XMouseD[]() 0x13         ; Start daemon or update config
+[]($PROGRAM_EXE_NAME)XMouseD[]() 0x23         ; Switch to REACTIVE mode (no restart needed!)
+[]($PROGRAM_EXE_NAME)XMouseD[]() 0x93         ; Enable debug mode
+[]($PROGRAM_EXE_NAME)XMouseD[]() 0x13         ; Disable debug mode
+[]($PROGRAM_EXE_NAME)XMouseD[]() 0x00         ; Stop daemon
 ```
 
 ### Command Arguments
@@ -172,7 +172,7 @@ Bit 7 (0x80)     - Debug mode (opens debug console)
 ## How It Works (Simple)
 
 ```
-1. XMouse reads USB wheel counter from SAGA hardware
+1. []($PROGRAM_EXE_NAME)XMouseD[]() reads USB wheel counter from SAGA hardware
 2. Calculates movement delta
 3. Sends standard scroll commands to Amiga
 4. Apps recognize wheel and scroll normally
