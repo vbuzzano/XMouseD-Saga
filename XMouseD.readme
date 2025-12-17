@@ -1,224 +1,104 @@
-~ XMouseD [PROGRAM_NAME]~ ~ 1.0.0 [PROGRAM_VERSION]~
-Extended mouse driver for Apollo 68080 SAGA chipset
-===========================================================
+~ XMouseD [PROGRAM_NAME]~ ~ 1.0 [PROGRAM_VERSION]~
+=====================================================
 
-Description: Extended mouse driver for Apollo 68080 SAGA chipset
-Vampire and Apollo accelerators equipped with the SAGA 
-chipset. Unlike traditional mouse drivers, ~ XMouseD [PROGRAM_NAME]~ runs 
-as a simple resident daemon with minimal CPU overhead 
-(~0.5% at default settings).
+~ Extended mouse driver for Apollo 68080 SAGA chipset [PROGRAM_DESC_SHORT]~
 
-Key features:
-  - Mouse wheel scrolling support for any application
-  - Configurable polling rates (5/10/20/40ms)
-  - Hot configuration (no restart needed)
-  - Message port IPC for daemon communication
-  - Debug console for development
-  - Just 7.4 KB executable size
-  - Clean exit with CTRL+C or C:~ XMouseD [PROGRAM_EXE_NAME]~ STOP
 
-REQUIREMENTS:
+WHAT IS IT?
 
-  - Apollo accelerator with SAGA chipset:
-    - Apollo Firebird V4
-    - Apollo Icedrake
-    - Apollo Manticore
-    - Apollo Salamander
-    - Apollo Phoenix
-    - A6000 Unicorn
-  
-  - AmigaOS 3.x (3.1 or higher recommended)
-  - Standard Amiga mouse with wheel support
-  - NewMouse driver (for wheel event generation)
+~ XMouseD [PROGRAM_NAME]~ enables mouse wheel scrolling on Vampire V4 and A6000 
+systems with SAGA chipset. Just copy the executable to C: and your mouse 
+wheel works in any Amiga application.
 
-INSTALLATION:
+Works perfectly with your existing setup - just a lightweight 
+background daemon that stays out of your way.
 
-1. Extract the archive to a temporary directory
-2. Run the included "Install" script:
-   Installer Install
-3. Follow the installer prompts to:
-   - Choose destination for executable (usually C:)
-   - Choose destination for documentation (usually HELP:)
-   - Optionally add to User-Startup for automatic startup
 
-Or manually:
-1. Copy ~ XMouseD [PROGRAM_EXE_NAME]~ to C:
-2. Copy ~ XMouseD [PROGRAM_EXE_NAME]~.guide to HELP:
-3. (Optional) Add "C:~ XMouseD [PROGRAM_EXE_NAME]~ >NIL:" to S:User-Startup
+REQUIREMENTS
 
-USAGE:
+- Vampire V4 Standalone,  or accelerator with 68080 SAGA chipset
+- Should work on the new Apollo A6000
+- AmigaOS 3.2, 3.9 or ApolloOS 9.5+
+- USB mouse with scroll wheel on SAGA USB port
 
-  C:~ XMouseD [PROGRAM_EXE_NAME]~
-    Start daemon or toggle if already running
 
-  C:~ XMouseD [PROGRAM_EXE_NAME]~ START
-    Start the daemon
+INSTALLATION
 
-  C:~ XMouseD [PROGRAM_EXE_NAME]~ STOP
-    Stop the daemon cleanly
+1. Extract archive to temporary location
+2. Double-click the "Install" icon and follow prompts
+   OR manually: Copy ~ XMouseD [PROGRAM_EXE_NAME]~ to C:
+3. (Optional) Add to User-Startup for automatic startup:
+   - Copy ~ XMouseD [PROGRAM_EXE_NAME]~ to S:User-Startup
+   - Or use the installer which offers this option
+4. Reboot (or run ~ XMouseD [PROGRAM_EXE_NAME]~ immediately)
+5. Done! Scroll away.
 
-  C:~ XMouseD [PROGRAM_EXE_NAME]~ 0x13
-    Configure with hex byte (0x13 = recommended default)
-    Can be used to update running daemon without restart
+TIP: The installer can automatically add ~ XMouseD [PROGRAM_EXE_NAME]~ to your 
+User-Startup for automatic startup on every boot. Choose this during installation 
+for hassle-free operation.
 
-CONFIGURATION:
 
-~ XMouseD [PROGRAM_EXE_NAME]~ uses an 8-bit configuration byte to control all 
-behavior:
+USAGE
 
-  Bit 0 (0x01) = Wheel Enable
-    1 = Wheel scrolling active (default)
-    0 = Wheel disabled
+  ~ XMouseD [PROGRAM_EXE_NAME]~           - Start or toggle daemon
+  ~ XMouseD [PROGRAM_EXE_NAME]~ STOP       - Stop daemon
+  ~ XMouseD [PROGRAM_EXE_NAME]~ 0x13       - Configure polling mode
 
-  Bit 1 (0x02) = Extra Buttons (4th & 5th)
-    1 = Buttons 4 & 5 enabled (default)
-    0 = Buttons 4 & 5 disabled
+Default mode (0x13) = wheel + buttons, balanced responsiveness.
 
-  Bits 4-5 (0x20, 0x40) = Poll Interval
-    00 = 5ms   (very responsive, ~1% CPU)
-    01 = 10ms  (balanced, ~0.5% CPU) ← default
-    10 = 20ms  (smooth, ~0.25% CPU)
-    11 = 40ms  (relaxed, ~0.1% CPU)
 
-  Bit 7 (0x80) = Debug Mode
-    1 = Debug console (dev builds only)
-    0 = Silent operation (default)
+QUICK TWEAKS
 
-Common configurations:
+Most users don't need to adjust anything. But if you want to:
 
-  0x13 = Wheel ON + Buttons ON + 10ms polling (recommended)
-  0x03 = Wheel OFF + Buttons ON + 10ms polling
-  0x31 = Wheel ON + Buttons ON + 5ms polling (snappier)
-  0x51 = Wheel ON + Buttons ON + 20ms polling (smoother)
-  0x91 = Wheel ON + Buttons ON + 40ms polling (very smooth)
+Scrolling too slow?
+  ~ XMouseD [PROGRAM_EXE_NAME]~ 0x23     (faster response)
 
-See ~ XMouseD [PROGRAM_NAME]~.guide for complete configuration reference.
+Scrolling too fast?
+  ~ XMouseD [PROGRAM_EXE_NAME]~ 0x33     (lower CPU usage)
 
-FEATURES:
+See ~ XMouseD [PROGRAM_NAME]~.guide for complete settings reference.
 
-  ✓ Minimal footprint (7.4 KB)
-  ✓ Efficient polling (0.5% CPU at default)
-  ✓ Hot configuration (no restart required)
-  ✓ Message port IPC system
-  ✓ Works on RTG and native screens
-  ✓ Clean daemon lifecycle
-  ✓ Compatible with standard NewMouse events
-  ✓ Dual event injection (RAWKEY + NEWMOUSE)
 
-ARCHITECTURE:
+FILES IN ARCHIVE
 
-~ XMouseD [PROGRAM_NAME]~ monitors the SAGA chipset's wheel counter register 
-and injects scroll events at configurable intervals. 
-Unlike interrupt-driven approaches, polling provides better 
-compatibility and cleaner resource management.
+  Install              - Installer script for easy setup
+  ~ XMouseD [PROGRAM_EXE_NAME]~          - The daemon executable
+  ~ XMouseD [PROGRAM_NAME]~.guide        - Full documentation (AmigaGuide)
+  ~ XMouseD [PROGRAM_NAME]~.readme       - This file
+  LICENSE              - MIT License
+  CHANGELOG.md         - All version changes
+  TECHNICAL.md         - For developers
 
-The daemon uses a public message port for IPC, allowing
-configuration changes without restarting or requiring
-privileged access.
 
-TECHNICAL:
+VERSION HISTORY
 
-  - Written in C using VBCC m68k-amigaos compiler
-  - Optimized for 68080 with -O3 -speed -sc -schedule
-  - Polling via UNIT_VBLANK timer device
-  - Message port: "XMouseD_Port"
-  - SAGA hardware registers: 
-    ¬ 0xDFF212 (buttons) 
-    ¬ 0xDFF213 (wheel)
-  - NewMouse events: IECLASS_RAWKEY + IECLASS_NEWMOUSE
+~ 1.0 [PROGRAM_VERSION]~ (~ 2025-12-17 [PROGRAM_DATE]~)
 
-See TECHNICAL.md in the archive for detailed architectural information.
+Initial release with full feature set:
+  - Mouse wheel scrolling for all applications
+  - Adaptive polling (uses minimal CPU when not scrolling)
+  - Support for extra buttons 4 & 5
+  - Hot configuration (change settings without restart)
+  - Small footprint (~6 KB)
+  - Compatible with AmigaOS 3.2/3.9 and ApolloOS
 
-DIFFERENCES FROM OTHER SOLUTIONS:
 
-  vs OptMouse (3.5 KB):
-    OptMouse is a classic serial mouse driver with load-stay-resident
-    pattern. ~ XMouseD [PROGRAM_NAME]~ adds modern daemon management, hot configuration,
-    and message port IPC.
+LICENSE
 
-  vs FreeWheel (38 KB):
-    FreeWheel is a full Commodity with GUI preferences window.
-    ~ XMouseD [PROGRAM_NAME]~ is lightweight daemon-only, focusing on wheel scrolling
-    without extra features. FreeWheel is useful if you want advanced
-    button remapping; ~ XMouseD [PROGRAM_NAME]~ is ideal if you just want the wheel to work.
+MIT License - Free and open source.
+See LICENSE file for details.
 
-  vs ApolloWheel (15 KB):
-    Similar lightweight daemon approach. ~ XMouseD [PROGRAM_NAME]~ emphasizes ultra-minimal
-    footprint and efficient polling.
 
-TROUBLESHOOTING:
-
-Wheel doesn't scroll?
-  - Verify ~ XMouseD [PROGRAM_EXE_NAME]~ is running: C:~ XMouseD [PROGRAM_EXE_NAME]~ (should report "already running")
-  - Check active window supports scrolling (try Workbench)
-  - Ensure wheel is enabled: C:~ XMouseD [PROGRAM_EXE_NAME]~ 0x13
-  - Review ~ XMouseD [PROGRAM_NAME]~.guide for full troubleshooting section
-
-Daemon won't start?
-  - Verify you have SAGA-equipped hardware
-  - Check you're on AmigaOS 3.x with standard libraries
-  - Try from Shell window to see error messages
-
-High CPU usage?
-  - Reduce polling rate: C:~ XMouseD [PROGRAM_EXE_NAME]~ 0x51 (20ms) or 0x91 (40ms)
-  - Verify hardware compatibility
-
-BUILDING FROM SOURCE:
-
-Requirements:
-  - VBCC m68k-amigaos toolchain
-  - AmigaOS NDK39 headers
-  - GNU make
-  - PowerShell (Windows) or bash (Unix)
-
-Build:
-  ./setup.ps1        (first time, fetch VBCC + NDK)
-  make               (compile)
-  make MODE=release  (release build)
-  make clean         (clean build artifacts)
-
-See TECHNICAL.md for detailed build information.
-
-LICENSE:
-
-~ XMouseD [PROGRAM_NAME]~ is freely distributable for non-commercial purposes.
-Source code is included and may be modified for personal use.
-
-HISTORY:
-
-Version: 1.0
-  - Initial release
-  - Wheel scrolling support
-  - Configurable polling rates
-  - Hot configuration via message port
-  - ~0.5% CPU overhead at default settings
-  - 7.4 KB executable
-
-CREDITS:
-
-~ XMouseD [PROGRAM_NAME]~ builds upon decades of Amiga mouse driver tradition,
-referencing patterns from classic drivers like OptMouse and
-modern commodities like FreeWheel.
-
-Special thanks to the Amiga developer community and the SAGA
-chipset documentation provided by Apollo accelerator designers.
+CREDITS & SUPPORT
 
 Author: ~ Vincent Buzzano [PROGRAM_AUTHOR]~
-Version: ~ 1.0.0 [PROGRAM_VERSION]~ ~ 2025-12-17 [PROGRAM_DATE]~
-GitHub: https://github.com/vbuzzano/XMouseD-SAGA
 
-======================================================================
+For bug reports, feature requests, or questions:
+https://github.com/vbuzzano/XMouse-Saga
 
-FILES IN ARCHIVE:
+Special thanks to Apollo Team, Amiga community, and VBCC developers.
 
-  Install ~ XMouseD [PROGRAM_NAME]~ (+.info)     - Commodore Installer script
-  ~ XMouseD [PROGRAM_EXE_NAME]~             - Executable daemon (ready to install)
-  ~ XMouseD [PROGRAM_NAME]~.guide       - Complete user documentation (AmigaGuide format)
-  ~ XMouseD [PROGRAM_NAME]~.readme      - Complete user documentation (AmigaGuide format)
+=====================================================
 
-======================================================================
-
-For support, questions, or contributions, visit:
-https://github.com/vbuzzano/XMouseD-SAGA
-
-Enjoy your wheel-enabled Amiga!
+Enjoy your wheel-enabled SAGA Amiga!
