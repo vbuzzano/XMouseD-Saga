@@ -27,10 +27,9 @@ Requires USB mouse with scroll wheel (and extra buttons 4 & 5) connected to the 
 
 ### ✅ Compatible & Recommended OS
 
-[]($PROGRAM_NAME)XMouseD[]() is tested and supported on these operating systems:
+~ XMouseD [PROGRAM_NAME]~ is tested and supported on these operating systems:
 
-- **AmigaOS 3.2** (recommended)
-- **AmigaOS 3.9** (with NDK 3.9 libraries)
+- **AmigaOS 3.x** (3.0, 3.1, 3.1.4, 3.2, 3.9 - all versions supported)
 - **ApolloOS 9.x** (AROS-based, fully compatible)
 - **AROS** (should work, ApolloOS is AROS-based)
 

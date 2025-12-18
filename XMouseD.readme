@@ -18,7 +18,7 @@ REQUIREMENTS
 
 - Vampire V4 Standalone,  or accelerator with 68080 SAGA chipset
 - Should work on the new Apollo A6000
-- AmigaOS 3.2, 3.9 or ApolloOS 9.5+
+- AmigaOS 3.x (3.0+) or ApolloOS 9.5+
 - USB mouse with scroll wheel on SAGA USB port
 
 
@@ -81,7 +81,7 @@ Initial release with full feature set:
   - Support for extra buttons 4 & 5
   - Hot configuration (change settings without restart)
   - Small footprint (~6 KB)
-  - Compatible with AmigaOS 3.2/3.9 and ApolloOS
+  - Compatible with AmigaOS 3.x and ApolloOS
 
 
 LICENSE

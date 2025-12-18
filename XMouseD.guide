@@ -231,8 +231,7 @@ hot config update (no restart needed).
 
 @{b}✅ SUPPORTED OPERATING SYSTEMS@{ub}
 
-  • @{b}AmigaOS 3.2@{ub} (recommended)
-  • @{b}AmigaOS 3.9@{ub} (with NDK 3.9 libraries)
+  • @{b}AmigaOS 3.x@{ub} (3.0, 3.1, 3.1.4, 3.2, 3.9 - all versions supported)
   • @{b}ApolloOS 9.x@{ub} (AROS-based, fully compatible)
   • @{b}AROS@{ub} (should work, ApolloOS is AROS-based)
 

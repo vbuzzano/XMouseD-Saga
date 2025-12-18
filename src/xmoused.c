@@ -27,7 +27,7 @@
 // ---> BEGIN GENERATED PROGRAM_CONSTANTS
 #define PROGRAM_NAME "XMouseD"
 #define PROGRAM_VERSION "1.0"
-#define PROGRAM_DATE "2025-12-17"
+#define PROGRAM_DATE "2025-12-18"
 #define PROGRAM_AUTHOR "Vincent Buzzano"
 #define PROGRAM_DESC_SHORT "SAGA eXtended Mouse Driver"
 // <--- END GENERATED PROGRAM CONSTANTS
@@ -52,6 +52,22 @@
 #define VERSION_STRING "$VER: " \
 PROGRAM_NAME" "PROGRAM_VERSION" ("PROGRAM_DATE")" \
 PROGRAM_DESC_SHORT" (c) "PROGRAM_AUTHOR
+
+//===========================================================================
+// User Messages
+//===========================================================================
+
+#define MSG_DAEMON_NOT_RUNNING      "daemon is not running"
+#define MSG_DAEMON_RUNNING          "daemon running (config: 0x%02lx)"
+#define MSG_DAEMON_STOPPED          "daemon stopped"
+#define MSG_DAEMON_START_FAILED     "failed to start daemon"
+#define MSG_CONFIG_UPDATED          "config updated to 0x%02lx"
+#define MSG_UNKNOWN_ARGUMENT        "unknown argument: %s"
+
+#define MSG_ERR_GET_STATUS_FAILED   "ERROR: Failed to get daemon status"
+#define MSG_ERR_UPDATE_CONFIG       "ERROR: Failed to update daemon config"
+#define MSG_ERR_STOP_DAEMON         "ERROR: Failed to stop daemon"
+#define MSG_ERR_DAEMON_TIMEOUT      "ERROR: Daemon not responding (timeout)"
 
 //===========================================================================
 // Newmouse button codes for extra buttons 4 & 5                             
@@ -94,6 +110,8 @@ PROGRAM_DESC_SHORT" (c) "PROGRAM_AUTHOR
 #define START_MODE_TOGGLE 0
 #define START_MODE_START 1
 #define START_MODE_STOP 2
+#define START_MODE_CONFIG 3
+#define START_MODE_STATUS 4
 
 // Configuration byte bits
 #define CONFIG_WHEEL_ENABLED    0x01    // Bit 0: Wheel enabled (RawKey + NewMouse) (0b00000001)
@@ -206,7 +224,7 @@ const char version[] = VERSION_STRING;
 // Function Prototypes
 //===========================================================================
 
-static BOOL sendDaemonMessage(struct MsgPort *port, UBYTE cmd, ULONG value);
+static ULONG sendDaemonMessage(struct MsgPort *port, UBYTE cmd, ULONG value);
 static inline int parseHexDigit(UBYTE c);
 static inline BYTE parseArguments(void);
 static inline const char* getModeName(UBYTE configByte);
@@ -250,22 +268,9 @@ static void daemon_Cleanup(void);
             Flush(s_debugCon); \
             SelectOutput(_old); \
         }
-
-    // Display startup config info
-    static void DebugConfigInfo(UBYTE configByte)
-    {
-        PrintF("config: 0x%02lx", (ULONG)configByte);
-        PrintF("wheel: %s", (configByte & CONFIG_WHEEL_ENABLED) ? "ON" : "OFF");
-        PrintF("extra buttons: %s", (configByte & CONFIG_BUTTONS_ENABLED) ? "ON" : "OFF");
-        if (configByte & CONFIG_DEBUG_MODE)
-        {
-            PrintF("mode: %s", getModeName(configByte));
-        }
-    }
 #else
     #define DebugLog(fmt)         {} // No-op
     #define DebugLogF(fmt, ...)   {} // No-op
-    #define DebugConfigInfo(configByte) {} // No-op
 #endif
 
 
@@ -301,46 +306,71 @@ LONG _start(void)
     if (startMode == START_MODE_STOP && !existingPort)
     {
         // Not running, nothing to do
-        Print("daemon is not running");
+        Print(MSG_DAEMON_NOT_RUNNING);
         goto cleanup;
     }
 
-    if (startMode == START_MODE_START && existingPort)
+    if (startMode == START_MODE_STATUS || (startMode == START_MODE_START && existingPort))
     {
-        // Already running with config byte → update config instead of error
-        if (s_configByte != DEFAULT_CONFIG_BYTE)
+        ULONG status;
+        
+        if (!existingPort)
         {
-            if(sendDaemonMessage(existingPort, XMSG_CMD_SET_CONFIG, s_configByte))
-            {
-                if (s_configByte & CONFIG_DEBUG_MODE)
-                {
-                    PrintF("config updated to 0x%02lx", (ULONG)s_configByte);
-                }
-            }
-            else
-            {
-                Print("ERROR: Failed to update daemon config");
-                exitCode = RETURN_FAIL;
-                goto cleanup;
-            }
+            Print(MSG_DAEMON_NOT_RUNNING);
+            exitCode = RETURN_WARN;
+            goto cleanup;
+        }
+        
+        // Query daemon status - result is config byte
+        status = sendDaemonMessage(existingPort, XMSG_CMD_GET_STATUS, 0);
+        
+        if (status != 0xFFFFFFFF)
+        {
+            PrintF(MSG_DAEMON_RUNNING, status);
         }
         else
         {
-            Print("daemon already running");
+            Print(MSG_ERR_GET_STATUS_FAILED);
+            exitCode = RETURN_FAIL;
+        }
+        
+        goto cleanup;
+    }
+
+    if (startMode == START_MODE_CONFIG && existingPort)
+    {
+        ULONG result = sendDaemonMessage(existingPort, XMSG_CMD_SET_CONFIG, s_configByte);
+        if (result == 0)
+        {
+            // Always log in dev builds
+            PrintF(MSG_CONFIG_UPDATED, (ULONG)s_configByte);
+        }
+        else
+        {
+            Print(MSG_ERR_UPDATE_CONFIG);
+            exitCode = RETURN_FAIL;
         }
         goto cleanup;
     }
-
+    
     if ((startMode == START_MODE_STOP || startMode == START_MODE_TOGGLE) && existingPort)
     {
+        ULONG result;
+        
         // Send QUIT message to daemon
-        sendDaemonMessage(existingPort, XMSG_CMD_QUIT, 0);
-        Print("stopping daemon... done.");
+        result = sendDaemonMessage(existingPort, XMSG_CMD_QUIT, 0);
+        
+        if (result == 0)
+        {
+            Print(MSG_DAEMON_STOPPED);
+        }
+        else
+        {
+            Print(MSG_ERR_STOP_DAEMON);
+            exitCode = RETURN_FAIL;
+        }
         goto cleanup;
     }
-
-    // Start the daemon
-    Printf("starting daemon...");
 
     // Create background process using WBM pattern
     if (CreateNewProcTags(
@@ -357,11 +387,13 @@ LONG _start(void)
             cli->cli_Module = 0;
         }
 
-        Print(" done.");
+        // Start the daemon
+        PrintF(MSG_DAEMON_RUNNING, (ULONG)s_configByte);
+
         goto cleanup;
     }
     
-    Print("failed to start daemon");
+    Print(MSG_DAEMON_START_FAILED);
     exitCode = RETURN_FAIL;
 
 cleanup:
@@ -380,13 +412,13 @@ cleanup:
  * @param value Command parameter
  * @return TRUE on success, FALSE on timeout/error
  */
-static BOOL sendDaemonMessage(struct MsgPort *port, UBYTE cmd, ULONG value)
+static ULONG sendDaemonMessage(struct MsgPort *port, UBYTE cmd, ULONG value)
 {
     struct MsgPort *replyPort = NULL;
     struct XMouseMsg *msg = NULL;
     struct MsgPort *timerPort = NULL;
     struct timerequest *timerReq = NULL;
-    BOOL success = FALSE;
+    ULONG result = 0xFFFFFFFF;  // Error by default
     ULONG replySig, timerSig, signals;
     
     // Create reply port
@@ -444,7 +476,7 @@ static BOOL sendDaemonMessage(struct MsgPort *port, UBYTE cmd, ULONG value)
     {
         // Reply received before timeout
         GetMsg(replyPort);
-        success = (msg->result == 0);  // 0 = success in daemon
+        result = msg->result;  // Return daemon's result
         
         // Abort timer
         AbortIO((struct IORequest *)timerReq);
@@ -454,7 +486,8 @@ static BOOL sendDaemonMessage(struct MsgPort *port, UBYTE cmd, ULONG value)
     {
         // Timeout: daemon didn't respond
         GetMsg(timerPort);
-        Print("ERROR: Daemon not responding (timeout)");
+        Print(MSG_ERR_DAEMON_TIMEOUT);
+        result = 0xFFFFFFFF;  // Timeout error
         // Message is still pending in daemon - nothing we can do
     }
 
@@ -481,7 +514,7 @@ cleanup:
         DeleteMsgPort(replyPort);
     }
     
-    return success;
+    return result;
 }
 
 /**
@@ -507,6 +540,7 @@ static inline BYTE parseArguments(void)
     // No argument = toggle mode
     if (*p == '\0' || *p == '\n')
     {
+        s_configByte = DEFAULT_CONFIG_BYTE;
         return START_MODE_TOGGLE;
     }
     
@@ -519,7 +553,19 @@ static inline BYTE parseArguments(void)
     // Test START case-insensitive
     if ((p[0]|32)=='s' && (p[1]|32)=='t' && (p[2]|32)=='a' && (p[3]|32)=='r' && (p[4]|32)=='t')
     {
-        return START_MODE_START;
+        // Check if START is followed by nothing, space, or newline
+        if (p[5] == '\0' || p[5] == ' ' || p[5] == '\t' || p[5] == '\n')
+        {
+            // Store config byte for daemon to use
+            s_configByte = DEFAULT_CONFIG_BYTE;
+            return START_MODE_START;
+        }
+    }
+    
+    // Test STATUS case-insensitive (must come after START check)
+    if ((p[0]|32)=='s' && (p[1]|32)=='t' && (p[2]|32)=='a' && (p[3]|32)=='t' && (p[4]|32)=='u' && (p[5]|32)=='s')
+    {
+        return START_MODE_STATUS;
     }
     
     // Test hex format: 0xBYTE
@@ -532,6 +578,11 @@ static inline BYTE parseArguments(void)
         {
             configByte = (UBYTE)((hi << 4) | lo);
             
+#ifdef RELEASE
+            // Force debug bit to 0 in release builds
+            configByte &= ~CONFIG_DEBUG_MODE;
+#endif
+            
             // Check STOP conditions: neither wheel nor buttons enabled (bits 0-1)
             if ((configByte & CONFIG_STOP) == 0)
             {
@@ -541,16 +592,13 @@ static inline BYTE parseArguments(void)
             
             // Store config byte for daemon to use
             s_configByte = configByte;
-            
-            // Display config info
-            DebugConfigInfo(configByte);
 
-            return START_MODE_START;
+            return START_MODE_CONFIG;
         }
     }
     
     // Unknown argument
-    PrintF("unknown argument: %s", args);
+    PrintF(MSG_UNKNOWN_ARGUMENT, args);
     return START_MODE_TOGGLE;
 }
 
@@ -575,7 +623,7 @@ static void daemon(void)
         // Open debug console if debug mode enabled
         if (s_configByte & CONFIG_DEBUG_MODE)
         {
-            s_debugCon = Open("CON:0/0/640/200/"PROGRAM_NAME" Debug/AUTO/CLOSE/WAIT", MODE_NEWFILE);
+            s_debugCon = Open("CON:0/0/640/200/"PROGRAM_NAME" Debug/AUTO/CLOSE", MODE_NEWFILE);
             
             DebugLog("daemon started");
             DebugLogF("Mode: %s", getModeName(s_configByte));
@@ -629,6 +677,11 @@ static void daemon(void)
                                 UBYTE oldInterval = (oldConfig & CONFIG_INTERVAL_MASK) >> CONFIG_INTERVAL_SHIFT;
                                 UBYTE newInterval = (newConfig & CONFIG_INTERVAL_MASK) >> CONFIG_INTERVAL_SHIFT;
                                 
+#ifdef RELEASE
+                                // Force debug bit to 0 in release builds
+                                newConfig &= ~CONFIG_DEBUG_MODE;
+#endif
+                                
                                 s_configByte = newConfig;
                                 msg->result = 0;  // Success
                                 
@@ -666,8 +719,7 @@ static void daemon(void)
 #ifndef RELEASE
                                 // Handle debug mode change
                                 if ((oldConfig & CONFIG_DEBUG_MODE) && !(newConfig & CONFIG_DEBUG_MODE))
-                                {
-                                    // Debug mode disabled - close console
+                                {                                    // Debug mode disabled - close console
                                     if (s_debugCon)
                                     {
                                         Close(s_debugCon);
@@ -679,7 +731,7 @@ static void daemon(void)
                                     // Debug mode enabled - open console
                                     if (!s_debugCon)
                                     {
-                                        s_debugCon = Open("CON:0/0/640/200/"PROGRAM_NAME" Debug/AUTO/CLOSE/WAIT", MODE_NEWFILE);
+                                        s_debugCon = Open("CON:0/0/640/200/"PROGRAM_NAME" Debug/AUTO/CLOSE", MODE_NEWFILE);
                                         DebugLog("Debug mode enabled");
                                     }
                                 }
@@ -688,7 +740,9 @@ static void daemon(void)
                             break;
                             
                         case XMSG_CMD_GET_STATUS:
-                            msg->result = (s_configByte << 16) | (s_pollInterval / 1000);
+                            // Return config byte only
+                            DebugLogF("Status requested: config=0x%02lx", (ULONG)s_configByte);
+                            msg->result = (ULONG)s_configByte;
                             break;
                             
                         default:

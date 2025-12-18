@@ -4,50 +4,44 @@ All notable changes to []($PROGRAM_NAME)XMouseD[]() will be documented in this f
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [1.0.0] - 2025-12-18
 
-### Added
-- **Adaptive button-hold fix**: System stays reactive while button is pressed
-  - Prevents polling slowdown when holding mouse button 4/5
-  - Ensures quick release detection even after long press
+Initial release of XMouseD - Extended mouse driver for Apollo 68080 SAGA chipset.
 
-### Fixed
-- **C2: Timeout in sendDaemonMessage()**: Added 2-second timeout to prevent shell freeze if daemon crashes
-  - Uses timer.device + Wait() on multiple signals (replySig | timerSig)
-  - Returns 0xFFFFFFFF on timeout, prints error message
-  - Cleanup centralized with goto pattern
+### Features
+- **Mouse wheel scrolling** - Scroll up/down support with NewMouse compatibility
+- **Extra buttons 4 & 5** - Full support for additional mouse buttons
+- **Adaptive polling system** - 8 modes (4 adaptive + 4 normal) for optimal CPU/responsiveness balance
+  - Adaptive modes: COMFORT, BALANCED, REACTIVE, ECO (smart polling)
+  - Normal modes: MODERATE, ACTIVE, INTENSIVE, PASSIVE (constant rate)
+- **Hot configuration** - Change settings without restarting daemon
+- **Debug mode** - Toggle debug console at runtime for troubleshooting
+- **Lightweight** - ~6KB executable with minimal CPU footprint
 
-### Added
-- **Buttons 4 & 5 support**: Read SAGA register bits 8-9 at $DFF212
-  - Press/release detection with state tracking
-  - Event injection: NM_BUTTON_FOURTH (0x7E), NM_BUTTON_FIFTH (0x7F)
-  - IECODE_UP_PREFIX (0x80) for release events
-- **Hot debug mode toggle**: Enable/disable debug console at runtime
-  - `XMouseD 0x93` opens CON: window
-  - `XMouseD 0x13` closes it (without restart)
-- Config byte system (0xBYTE) for startup configuration
-  - Bit 0: Wheel enable/disable
-  - Bit 1: Extra buttons enable/disable (buttons 4 & 5)
-  - Bits 4-5: Poll interval (5ms, 10ms, 20ms, 40ms)
-  - Bit 7: Debug mode with CON: window
-- Command line arguments: START, STOP, 0xBYTE
-- Toggle mode (no argument): start if stopped, stop if running
-- Message port system for daemon control (XMSG_CMD_*)
-- **Hot config update**: Send new config byte to running daemon without restart
-- Debug mode with CON: window for troubleshooting
-- Conditional wheel processing based on CONFIG_WHEEL_ENABLED
-- Support for buttons-only mode (wheel disabled, buttons enabled)
+### Usage
+- `XMouseD` - Toggle daemon (start/stop)
+- `XMouseD START` - Start with default config
+- `XMouseD STOP` - Stop daemon
+- `XMouseD 0xBYTE` - Start/update with custom config byte
 
-### Changed
-- Unified event injection: always send both RawKey and NewMouse events when wheel enabled
-- Simplified config byte validation: accepts either wheel OR buttons enabled
-- Poll interval configurable via config byte (4 values: 5/10/20/40ms)
-- Comment style: use `//` for all active code, `/* */` only for docstrings and block disabling
-- Default config: 0x13 (wheel ON, buttons ON, 10ms, debug OFF)
+### Technical
+- Singleton daemon with public message port
+- Timer-based polling (adaptive or fixed intervals)
+- Direct SAGA hardware register access ($DFF212)
+- Input.device event injection (IECLASS_RAWKEY + IECLASS_NEWMOUSE)
+- 2-second message timeout for reliable communication
+- Proper resource cleanup on exit
 
-### Fixed
-- Timer initialization with proper microsecond intervals
-- Config byte parsing with hex notation (0xBYTE)
+### Compatibility
+- Vampire V4 Standalone, A6000 (Apollo 68080 SAGA chipset)
+- AmigaOS 3.x (3.0+), ApolloOS 9.x
+- USB mouse with wheel and extra buttons
+
+### Documentation
+- AmigaGuide manual (XMouseD.guide)
+- Aminet-ready readme (XMouseD.readme)
+- Technical documentation (docs/TECHNICAL.md)
+- Installer script included
 - Wrap-around handling for 8-bit wheel counter delta calculation
 - Resource cleanup on daemon exit (timer, input.device, ports)
 
