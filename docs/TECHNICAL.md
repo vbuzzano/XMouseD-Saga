@@ -1,6 +1,6 @@
-# XMouse Technical Documentation
+# []($PROGRAM_NAME)XMouseD[]() Technical Documentation
 
-Lightweight daemon running as background process. No dynamic allocation during execution, direct OS calls via VBCC inline pragmas.
+[]($PROGRAM_DESCRIPTION)Extended mouse driver for Apollo 68080 SAGA chipset[]()
 
 ## Startup
 

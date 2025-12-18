@@ -1,4 +1,4 @@
-# XMouseD Vision & Architecture
+# []($PROGRAM_NAME)XMouseD[]() Vision & Architecture
 
 Create the **simplest possible** mouse wheel driver for Vampire/Apollo SAGA:
 - light (~6KB)
@@ -12,11 +12,11 @@ The SAGA chipset handles basic mouse functions **natively in hardware**:
 - Mouse movement (X/Y position)
 - Buttons 1, 2, 3 (left, right, middle)
 
-XMouseD is a **complementary driver** that adds:
+F is a **complementary driver** that adds:
 - **Wheel support** (scroll up/down) - reads counter at `$DFF213`
 - **Buttons 4 & 5** (extra buttons) - reads bits 8-9 at `$DFF212`
 
-> **Note**: XMouseD is **optional**. Your mouse works without it - you just won't have wheel or extra buttons.
+> **Note**: # []($PROGRAM_NAME)XMouseD[]() is **optional**. Your mouse works without it - you just won't have wheel or extra buttons.
 
 ## Timer-Based Polling
 
