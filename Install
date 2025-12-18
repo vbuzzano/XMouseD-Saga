@@ -142,4 +142,4 @@
 ; ========================================
 (complete 100)
 ; youpi ^^
-(exit "Installation Complete!\n~ XMouseD [PROGRAM_NAME]~, eXtended Mouse Driver for Apollo 68080 SAGA Hardware E Daemon has been successfully installed.")
+(exit "Installation Complete!\n~ XMouseD [PROGRAM_NAME]~, ~ XMouseD [PROGRAM_DESC_SHORT]~ has been successfully installed.")

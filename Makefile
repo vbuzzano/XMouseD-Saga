@@ -67,7 +67,7 @@ ifeq ($(MODE),release)
     CFLAGS = -O3 -speed -sc -schedule -DRELEASE $(C_INCL_ALL) $(EXTRA_CFLAGS) -cpu=$(CPU)
 else
     # Dev: same optimization but with debug symbols
-    CFLAGS = -O3 -speed -sc -schedule $(C_INCL_ALL) $(EXTRA_CFLAGS) -cpu=$(CPU)
+    CFLAGS = -O3 -speed -sc -schedule -DEBUG_ADAPTIVE $(C_INCL_ALL) $(EXTRA_CFLAGS) -cpu=$(CPU)
 endif
 
 

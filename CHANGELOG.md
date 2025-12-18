@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- **Adaptive button-hold fix**: System stays reactive while button is pressed
+  - Prevents polling slowdown when holding mouse button 4/5
+  - Ensures quick release detection even after long press
+
 ### Fixed
 - **C2: Timeout in sendDaemonMessage()**: Added 2-second timeout to prevent shell freeze if daemon crashes
   - Uses timer.device + Wait() on multiple signals (replySig | timerSig)
