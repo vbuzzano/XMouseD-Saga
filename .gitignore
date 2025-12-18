@@ -4,10 +4,6 @@
 # Compiler: VBCC (AmigaOS cross-compiler)
 #############################################################################
 
-Example*
-asci-test.txt
-XMouseD copy.guide
-analyse-xmoused.md
 
 #############################################################################
 # Build Outputs (VBCC)
@@ -50,6 +46,9 @@ dist/*
 .idea/
 *.sublime-*
 
+.git*
+!.gitignore
+
 #############################################################################
 # OS
 #############################################################################
@@ -75,6 +74,9 @@ $RECYCLE.BIN/
 *.cache
 *.log
 
+*_
+*copy.*
+
 # VBCC temporaires
 vbcc.config.tmp
 vc.err
@@ -84,6 +86,8 @@ vc.err
 *.h_
 *.c~
 *.h~
+
+
 
 #############################################################################
 # Dependencies (if you use external libs)
@@ -129,6 +133,3 @@ tools/
 # Temp files
 *.bak
 *.tmp
-
-
-.git*
