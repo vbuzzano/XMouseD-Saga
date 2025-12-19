@@ -7,11 +7,11 @@ argments. Configuration uses a simple hex byte format.
 
 Start, stop, or toggle XMouseD with these commands:
 
-```bash
-XMouseD              # Toggle (start if stopped, stop if running)
-XMouseD START        # Start with default config (wheel+buttons)
-XMouseD STOP         # Stop daemon gracefully
-XMouseD 0xBYTE       # Start with custom config byte 
+```shell
+XMouseD           # Toggle (start if stopped, stop if running)
+XMouseD START     # Start with default config (wheel+buttons)
+XMouseD STOP      # Stop daemon gracefully
+XMouseD 0xBYTE    # Start with custom config byte 
 ```
 
 ## Configuration
@@ -31,20 +31,20 @@ XMouseD 0xBYTE       # Start with custom config byte
 
 ### Adaptive Modes (recommended):
 
-```bash
-XMouseD 0x13         ; BALANCED (default, responsive for everyday use)
-XMouseD 0x03         ; COMFORT (occasional use, reactive when needed)
-XMouseD 0x23         ; REACTIVE (instant response, fast reactivity)
-XMouseD 0x33         ; ECO (minimal CPU, slower reactivity)
+```shell
+XMouseD 0x13      # BALANCED (default, responsive for everyday use)
+XMouseD 0x03      # COMFORT (occasional use, reactive when needed)
+XMouseD 0x23      # REACTIVE (instant response, fast reactivity)
+XMouseD 0x33      # ECO (minimal CPU, slower reactivity)
 ```
 
 ### Normal Modes (constant reactivity):
 
-```bash
-XMouseD 0x53         ; ACTIVE (medium reactivity)
-XMouseD 0x43         ; MODERATE (low reactivity)
-XMouseD 0x63         ; INTENSIVE (high reactivity)
-XMouseD 0x73         ; PASSIVE (very low reactivity)
+```shell
+XMouseD 0x53      # ACTIVE (medium reactivity)
+XMouseD 0x43      # MODERATE (low reactivity)
+XMouseD 0x63      # INTENSIVE (high reactivity)
+XMouseD 0x73      # PASSIVE (very low reactivity)
 ```
 
 ## Hot Config Update
@@ -52,10 +52,10 @@ XMouseD 0x73         ; PASSIVE (very low reactivity)
 If []($PROGRAM_NAME)XMouseD[]() is already running, launch with a new config byte to update settings
 instantly:
 
-```bash
-XMouseD 0x13         ; Start daemon or update config
-XMouseD 0x23         ; Switch to REACTIVE mode (no restart needed!)
-XMouseD 0x00         ; Stop daemon
+```shell
+XMouseD 0x13      # Start daemon or update config
+XMouseD 0x23      # Switch to REACTIVE mode (no restart needed!)
+XMouseD 0x00      # Stop daemon
 ```
 
 ## Command Arguments
