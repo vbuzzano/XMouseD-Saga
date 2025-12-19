@@ -122,10 +122,17 @@ Codes used: `NM_WHEEL_UP/DOWN` (0x7A/0x7B), `NM_BUTTON_FOURTH/FIFTH` (0x7E/0x7F)
 Simple: `s_pollInterval = burstUs` (constant based on chosen profile).
 
 Available profiles (bits 4-5):
-- MODERATE: 20ms (COMFORT profile)
-- ACTIVE: 10ms (BALANCED profile, default)
-- INTENSIVE: 5ms (REACTIVE profile)
-- PASSIVE: 40ms (ECO profile)
+
+| Profile | Mode | Constant Interval | Reactivity |
+|---------|------|-------------------|-----------|
+| COMFORT | Adaptive | 20ms | Low (idle-friendly) |
+| BALANCED | Adaptive | 10ms | Medium (default) |
+| REACTIVE | Adaptive | 5ms | High (responsive) |
+| ECO | Adaptive | 40ms | Very Low (CPU-saving) |
+| MODERATE | Normal | 20ms | Low |
+| ACTIVE | Normal | 10ms | Medium |
+| INTENSIVE | Normal | 5ms | High |
+| PASSIVE | Normal | 40ms | Very Low |
 
 ### Adaptive Mode
 
@@ -193,7 +200,7 @@ struct XMouseMsg {
 
 **Hot config update:**
 ```bash
-xmoused 0x23  # Change config without restarting daemon
+XMouseD 0x23  # Change config without restarting daemon
 ```
 
 Daemon detects mode change (adaptive↔normal) or profile change, reinitializes adaptive system and restarts timer.
@@ -260,9 +267,9 @@ TIMER_START(s_pollInterval);  // Restart with new interval
 
 **Activation:** Bit 7 (0x80) of config byte.
 
-```bash
-xmoused 0x93  # Debug ON
-xmoused 0x13  # Debug OFF
+```shell
+XMouseD 0x93  # Debug ON
+XMouseD 0x13  # Debug OFF
 ```
 
 **Console:** `CON:0/0/640/200/XMouseD Debug/AUTO/CLOSE/WAIT`
@@ -299,7 +306,7 @@ This downloads and configures:
 > make rebuild
 ```
 
-Output: `dist/xmoused` with debug symbols, optimizations enabled (-O3 -speed)
+Output: `dist/XMouseD` with debug symbols, optimizations enabled (-O3 -speed)
 
 
 **Release build:**
@@ -356,7 +363,7 @@ make upload
 
 This performs:
 1. Build the executable (if needed)
-2. Upload `dist/xmoused` to Vampire via ACP
+2. Upload `dist/XMouseD` to Vampire via ACP
 
 
 
