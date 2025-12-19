@@ -1,37 +1,37 @@
-@database ~ XMouseD [PROGRAM_EXE_NAME]~.guide
-@author "~ Vincent Buzzano [PROGRAM_AUTHOR]~"
-@$VER: ~ 1.0 [PROGRAM_VERSION]~
-@smartwrap
+@database XMouseD.guide
+@author "Vincent Buzzano"
+@$VER: 1.0
 
-@node main "~ XMouseD [PROGRAM_NAME]~"
+@node main "XMouseD"
 @next basicusage
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
+@{fg highlight}
+                               @{b}XMouseD v1.0@{ub}
+                        SAGA eXtended Mouse Driver
+@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
-                    @{fg shine}@{b}~ XMouseD [PROGRAM_NAME]~ ~ 1.0 [PROGRAM_VERSION]~@{ub}@{fg text}
-           @{b}~ SAGA eXtended Mouse Driver [PROGRAM_DESC_SHORT]~@{ub}
+@{fg highlight}XMouseD@{fg text} is a lightweight background daemon that enables mouse wheel scrolling 
+and extra buttons (4/5) support on Vampire/@{b}Apollo@{ub} @{b}SAGA@{ub} systems.
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
-
-~ XMouseD [PROGRAM_NAME]~ is a lightweight background daemon (~6KB) that enables mouse wheel
-scrolling and extra buttons (4/5) support on Vampire/Apollo SAGA systems.
-
-It monitors USB mouse hardware directly from SAGA chipset registers and
+It monitors USB mouse hardware directly from @{b}SAGA@{ub} chipset registers and
 injects standard NewMouse-compatible events into the Amiga input system.
 
 @{b}Result:@{ub} Your mouse wheel works everywhere - no app modifications needed!
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @{b}TABLE OF CONTENTS@{ub}
 
-  @{" Basic Usage          " link basicusage} - Commands and controls
-  @{" Polling Modes        " link pollingmodes} - Adaptive vs Normal modes
-  @{" Configuration        " link configuration} - Detailed settings
-  @{" Compatibility        " link compatibility} - Supported hardware/OS
-  @{" Troubleshooting      " link troubleshooting} - Common issues
-  @{" Technical Details    " link technical} - How it works
-  @{" License & Credits    " link license} - MIT License, author info
+  @{" Basic Usage          " link basicusage} - Commands and controls 
+  @{" Polling Modes        " link pollingmodes} - Adaptive vs Normal modes 
+  @{" Configuration        " link configuration} - Detailed settings 
+  @{" Compatibility        " link compatibility} - Supported hardware/OS 
+  @{" Troubleshooting      " link troubleshooting} - Common issues 
+  @{" Technical Details    " link technical} - How it works 
+  @{" License & Credits    " link license} - MIT License, author info 
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @endnode
 
@@ -39,45 +39,48 @@ injects standard NewMouse-compatible events into the Amiga input system.
 @prev main
 @next pollingmodes
 @toc main
-
-@{b}BASIC USAGE@{ub}
-
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
+@{fg highlight}
+                              @{b}BASIC USAGE@{ub}
+@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @{b}Command Line Syntax@{ub}
 
-  ~ XMouseD [PROGRAM_EXE_NAME]~                  - Toggle (start/stop)
-  ~ XMouseD [PROGRAM_EXE_NAME]~ START            - Start with default config
-  ~ XMouseD [PROGRAM_EXE_NAME]~ STOP             - Stop daemon
-  ~ XMouseD [PROGRAM_EXE_NAME]~ 0x<byte>         - Start/update with config byte
+  XMouseD                  - Toggle (start/stop)
+  XMouseD START            - Start with default config
+  XMouseD STOP             - Stop daemon
+  XMouseD 0x<byte>         - Start/update with config byte
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @{b}Common Commands@{ub}
 
-  ~ XMouseD [PROGRAM_EXE_NAME]~ 0x13             - BALANCED mode (default, recommended)
-  ~ XMouseD [PROGRAM_EXE_NAME]~ 0x03             - COMFORT mode (low CPU usage)
-  ~ XMouseD [PROGRAM_EXE_NAME]~ 0x23             - REACTIVE mode (instant response)
-  ~ XMouseD [PROGRAM_EXE_NAME]~ 0x53             - ACTIVE normal mode (constant 10ms)
+  XMouseD 0x13             - BALANCED mode (default, recommended)
+  XMouseD 0x03             - COMFORT mode (low CPU usage)
+  XMouseD 0x23             - REACTIVE mode (instant response)
+  XMouseD 0x53             - ACTIVE normal mode (constant 10ms)
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @{b}Hot Configuration Update@{ub}
 
 You can change settings @{b}without restarting@{ub} the daemon!
 
 Example:
-  ~ XMouseD [PROGRAM_EXE_NAME]~ 0x13             - Start in BALANCED mode
-  ~ XMouseD [PROGRAM_EXE_NAME]~ 0x23             - Switch to REACTIVE mode (instant!)
-  ~ XMouseD [PROGRAM_EXE_NAME]~ 0x53             - Switch to ACTIVE mode
+  XMouseD 0x13             - Start in BALANCED mode
+  XMouseD 0x23             - Switch to REACTIVE mode (instant!)
+  XMouseD 0x53             - Switch to ACTIVE mode
 
-~ XMouseD [PROGRAM_NAME]~ detects the running daemon and sends a configuration message
+XMouseD detects the running daemon and sends a configuration message
 instead of starting a new instance.
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 See @{" Polling Modes " link pollingmodes} to understand adaptive vs normal modes.
 See @{" Configuration " link configuration} for detailed config byte format.
+
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @endnode
 
@@ -85,39 +88,40 @@ See @{" Configuration " link configuration} for detailed config byte format.
 @prev basicusage
 @next configuration
 @toc main
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
+@{fg highlight}
+                             @{b}POLLING MODES@{ub}
+@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
-@{b}POLLING MODES@{ub}
+XMouseD offers two polling strategies: @{b}Adaptive@{ub} and @{b}Normal@{ub}.
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
-
-~ XMouseD [PROGRAM_NAME]~ offers two polling strategies: @{b}Adaptive@{ub} and @{b}Normal@{ub}.
-
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @{b}ADAPTIVE MODES (Recommended)@{ub}
 
 Smart polling that adjusts to your activity:
-  • When @{b}idle@{ub}: polls slowly (saves CPU)
-  • When @{b}scrolling@{ub}: speeds up instantly for smooth response
-  • Automatically transitions between idle/active/burst states
+  - When @{b}idle@{ub}: polls slowly (saves CPU)
+  - When @{b}scrolling@{ub}: speeds up instantly for smooth response
+  - Automatically transitions between idle/active/burst states
 
 Perfect for everyday use - responsive when needed, efficient at rest.
 
 @{fg shine}Available Adaptive Modes:@{fg text}
 
   @{b}COMFORT@{ub}    (0x03) - Occasional use, relaxed response
-                    Idle: 150ms → Active: 60ms → Burst: 20ms
+                    Idle: 150ms -> Active: 60ms -> Burst: 20ms
 
   @{b}BALANCED@{ub}   (0x13) - Default, best for most users
-                    Idle: 100ms → Active: 30ms → Burst: 10ms
+                    Idle: 100ms -> Active: 30ms -> Burst: 10ms
 
   @{b}REACTIVE@{ub}   (0x23) - Instant response, always ready
-                    Idle: 50ms → Active: 15ms → Burst: 5ms
+                    Idle: 50ms -> Active: 15ms -> Burst: 5ms
 
   @{b}ECO@{ub}        (0x33) - Minimal CPU usage, slow reactivity
-                    Idle: 200ms → Active: 80ms → Burst: 40ms
+                    Idle: 200ms -> Active: 80ms -> Burst: 40ms
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @{b}NORMAL MODES (Constant Polling)@{ub}
 
@@ -130,17 +134,19 @@ Fixed polling rate - same speed all the time, no variation.
   @{b}INTENSIVE@{ub}   (0x63) - Constant 5ms polling (high CPU)
   @{b}PASSIVE@{ub}     (0x73) - Constant 40ms polling (power saving)
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @{b}Which Mode Should I Choose?@{ub}
 
-  • @{b}Most users@{ub}:      BALANCED (0x13) adaptive - best balance
-  • @{b}Low-power systems@{ub}: ECO (0x33) adaptive or PASSIVE (0x73)
-  • @{b}Gaming/fast work@{ub}: REACTIVE (0x23) adaptive
-  • @{b}Predictable feel@{ub}: ACTIVE (0x53) normal mode
+  - @{b}Most users@{ub}:      BALANCED (0x13) adaptive - best balance
+  - @{b}Low-power systems@{ub}: ECO (0x33) adaptive or PASSIVE (0x73)
+  - @{b}Gaming/fast work@{ub}: REACTIVE (0x23) adaptive
+  - @{b}Predictable feel@{ub}: ACTIVE (0x53) normal mode
 
 Try different modes to find your preference! Change anytime with
 hot config update (no restart needed).
+
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @endnode
 
@@ -148,14 +154,15 @@ hot config update (no restart needed).
 @prev pollingmodes
 @next compatibility
 @toc main
-
-@{b}CONFIGURATION DETAILS@{ub}
-
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
+@{fg highlight}
+                          @{b}CONFIGURATION DETAILS@{ub}
+@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @{b}Config Byte Format@{ub}
 
-~ XMouseD [PROGRAM_NAME]~ uses a single hex byte (0x00-0xFF) to configure all settings:
+XMouseD uses a single hex byte (0x00-0xFF) to configure all settings:
 
   @{b}Bit 0 (0x01)@{ub}  - Wheel enabled (scroll events)
   @{b}Bit 1 (0x02)@{ub}  - Extra buttons 4 & 5 enabled
@@ -163,7 +170,7 @@ hot config update (no restart needed).
   @{b}Bits 4-6@{ub}     - Polling mode selection (see below)
   @{b}Bit 7@{ub}        - Reserved (do not use)
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @{b}Polling Mode Selection (Bits 4-6)@{ub}
 
@@ -181,7 +188,7 @@ hot config update (no restart needed).
       10 = INTENSIVE (0x63) - 5ms
       11 = PASSIVE   (0x73) - 40ms
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @{b}Common Configuration Examples@{ub}
 
@@ -196,7 +203,7 @@ hot config update (no restart needed).
   @{b}0x01@{ub}  - Wheel only, no buttons, COMFORT mode
   @{b}0x02@{ub}  - Buttons only, no wheel, COMFORT mode
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @endnode
 
@@ -204,64 +211,65 @@ hot config update (no restart needed).
 @prev configuration
 @next troubleshooting
 @toc main
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
+@{fg highlight}
+                       @{b}HARDWARE & OS COMPATIBILITY@{ub}
+@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
-@{b}HARDWARE & OS COMPATIBILITY@{ub}
-
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
-
-@{b}✅ WORKS ON (SAGA Chipset Required)@{ub}
-
-~ XMouseD [PROGRAM_NAME]~ requires Apollo 68080 accelerators with SAGA chipset.
+XMouseD requires @{b}Apollo@{ub} 68080 accelerators with @{b}SAGA@{ub} chipset.
 
 @{fg shine}Confirmed Compatible:@{fg text}
-  • Vampire V4 Standalone (Firebird)
-  • A6000 Unicorn (untested but should work)
+  - Vampire V4 Standalone (Firebird)
+  - A6000 Unicorn (untested but should work)
 
 @{fg shine}Should Work (untested):@{fg text}
-  • Vampire V4 Icedrake
-  • Vampire V4 Manticore
-  • Vampire V4 Salamander
-  • Vampire V4 Phoenix
+  - Vampire V4 Icedrake
+  - Vampire V4 Manticore
+  - Vampire V4 Salamander
+  - Vampire V4 Phoenix
 
 @{b}Requirements:@{ub}
-  • USB mouse with scroll wheel connected to SAGA USB port
-  • Optional: Extra buttons 4 & 5 (if your mouse has them)
+  - USB mouse with scroll wheel connected to @{b}SAGA@{ub} USB port
+  - Optional: Extra buttons 4 & 5 (if your mouse has them)
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
-@{b}✅ SUPPORTED OPERATING SYSTEMS@{ub}
+@{b}SUPPORTED OPERATING SYSTEMS@{ub}
 
-  • @{b}AmigaOS 3.x@{ub} (3.0, 3.1, 3.1.4, 3.2, 3.9 - all versions supported)
-  • @{b}ApolloOS 9.x@{ub} (AROS-based, fully compatible)
-  • @{b}AROS@{ub} (should work, ApolloOS is AROS-based)
+  - @{b}AmigaOS 3.x@{ub} (3.0, 3.1, 3.1.4, 3.2, 3.9 - all versions supported)
+  - @{b}@{b}Apollo@{ub}OS 9.x@{ub} (AROS-based, fully compatible)
+  - @{b}AROS@{ub} (should work, @{b}Apollo@{ub}OS is AROS-based)
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
-@{b}❌ DOES NOT WORK ON@{ub}
+@{b}DOES NOT WORK ON@{ub}
 
-~ XMouseD [PROGRAM_NAME]~ will @{b}NOT@{ub} function on these platforms:
+XMouseD will @{b}NOT@{ub} function on these platforms:
 
-  • Vampire V2 (has SAGA but no USB mouse port)
-  • Classic Amiga (A500, A1200, A4000, etc.)
-  • Emulators (UAE, WinUAE, FS-UAE)
-  • Other accelerators (Blizzard, Apollo 1260, PiStorm)
-  • AmigaOS 4.x, MorphOS, AROS x86
+  - Vampire V2 (has @{b}SAGA@{ub} but no USB mouse port)
+  - Classic Amiga (A500, A1200, A4000, etc.)
+  - Emulators (UAE, WinUAE, FS-UAE)
+  - Other accelerators (Blizzard, @{b}Apollo@{ub} 1260, PiStorm)
+  - AmigaOS 4.x, MorphOS, AROS x86
 
-@{fg shine}Reason:@{fg text} ~ XMouseD [PROGRAM_NAME]~ reads directly from SAGA hardware registers
-at $DFF212/$DFF213 which only exist on Apollo SAGA chipsets.
+@{fg shine}Reason:@{fg text} XMouseD reads directly from @{b}SAGA@{ub} hardware registers
+at $DFF212/$DFF213 which only exist on @{b}Apollo@{ub} @{b}SAGA@{ub} chipsets.
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @{b}COMPATIBILITY WITH OTHER SOFTWARE@{ub}
 
-~ XMouseD [PROGRAM_NAME]~ is compatible with:
-  • @{b}IControl@{ub} (AmigaOS 3.2 preferences)
-  • @{b}FreeWheel@{ub} (Aminet commodity)
-  • @{b}Other NewMouse-compatible tools@{ub}
+XMouseD is compatible with:
+  - @{b}IControl@{ub} (AmigaOS 3.2 preferences)
+  - @{b}FreeWheel@{ub} (Aminet commodity)
+  - @{b}Other NewMouse-compatible tools@{ub}
 
-~ XMouseD [PROGRAM_NAME]~ injects standard NewMouse events (IECLASS_NEWMOUSE with
+XMouseD injects standard NewMouse events (IECLASS_NEWMOUSE with
 NM_WHEEL_UP/DOWN codes), so any software supporting NewMouse
 protocol will recognize the wheel.
+
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @endnode
 
@@ -269,71 +277,50 @@ protocol will recognize the wheel.
 @prev compatibility
 @next technical
 @toc main
-
-@{b}TROUBLESHOOTING@{ub}
-
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
+@{fg highlight}
+                           @{b}TROUBLESHOOTING@{ub}
+@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @{b}Wheel Not Working@{ub}
 
   1. Verify your hardware:
-     • Do you have a Vampire V4/A6000 with SAGA chipset?
-     • Is your USB mouse connected to the SAGA USB port?
-     • Does your mouse have a scroll wheel?
+     - Do you have a Vampire V4/A6000 with @{b}SAGA@{ub} chipset?
+     - Is your USB mouse connected to the @{b}SAGA@{ub} USB port?
+     - Does your mouse have a scroll wheel?
 
-  2. Check if ~ XMouseD [PROGRAM_NAME]~ is running:
-     • Run: @{b}~ XMouseD [PROGRAM_EXE_NAME]~@{ub} (should say "already running" or start)
+  2. Check if XMouseD is running:
+     - Run: @{b}XMouseD@{ub} (should say "already running" or start)
 
   3. Test with a different application
-     • Some apps may not support NewMouse wheel events
+     - Some apps may not support NewMouse wheel events
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
-
-@{b}Scrolling Too Slow/Fast@{ub}
-
-Try different polling modes:
-
-  @{b}Too slow?@{ub}
-    • REACTIVE mode: @{b}~ XMouseD [PROGRAM_EXE_NAME]~ 0x23@{ub}
-    • INTENSIVE normal: @{b}~ XMouseD [PROGRAM_EXE_NAME]~ 0x63@{ub}
-
-  @{b}Too fast/jittery?@{ub}
-    • ECO mode: @{b}~ XMouseD [PROGRAM_EXE_NAME]~ 0x33@{ub}
-    • PASSIVE normal: @{b}~ XMouseD [PROGRAM_EXE_NAME]~ 0x73@{ub}
-
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
-
-@{b}High CPU Usage@{ub}
-
-If you notice CPU load:
-  • Switch to ECO adaptive: @{b}~ XMouseD [PROGRAM_EXE_NAME]~ 0x33@{ub}
-  • Or PASSIVE normal: @{b}~ XMouseD [PROGRAM_EXE_NAME]~ 0x73@{ub}
-
-Adaptive modes automatically reduce CPU usage when idle.
-
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @{b}Cannot Stop Daemon@{ub}
 
-  • Run: @{b}~ XMouseD [PROGRAM_EXE_NAME]~ STOP@{ub}
-  • If that fails, find the process and send CTRL+C signal
-  • Last resort: reboot (daemon stops automatically)
+  - Run: @{b}XMouseD STOP@{ub}
+  - If that fails, find the process and send CTRL+C signal
+  - Last resort: reboot (daemon stops automatically)
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @{b}Extra Buttons 4/5 Not Working@{ub}
 
   1. Verify your mouse supports buttons 4 & 5
   2. Ensure bit 1 is enabled in config (0x02)
-     • Example: @{b}~ XMouseD [PROGRAM_EXE_NAME]~ 0x13@{ub} has buttons enabled
-     • @{b}~ XMouseD [PROGRAM_EXE_NAME]~ 0x11@{ub} would disable buttons
+     - Example: @{b}XMouseD 0x13@{ub} has buttons enabled
+     - @{b}XMouseD 0x11@{ub} would disable buttons
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @{b}Still Having Issues?@{ub}
 
-  • Report bugs on GitHub with detailed description
-  • Check SAGA register $DFF212 for hardware values
+  - Report bugs on GitHub with detailed description
+  - Check @{b}SAGA@{ub} register $DFF212 for hardware values
+
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @endnode
 
@@ -341,85 +328,46 @@ Adaptive modes automatically reduce CPU usage when idle.
 @prev troubleshooting
 @next license
 @toc main
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
+@{fg highlight}
+                           @{b}TECHNICAL DETAILS@{ub}
+@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
-@{b}TECHNICAL DETAILS@{ub}
-
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
-
-@{b}How ~ XMouseD [PROGRAM_NAME]~ Works@{ub}
+@{b}How XMouseD Works@{ub}
 
 1. @{b}Background Daemon@{ub}
-   ~ XMouseD [PROGRAM_NAME]~ runs as a detached background process with public port
-   "~ XMouseD [PROGRAM_NAME]~" for external control.
+   XMouseD runs as a detached background process with public port
+   "XMouseD" for external control.
 
 2. @{b}Hardware Polling@{ub}
    Timer-based polling (UNIT_VBLANK timer device):
-   • Reads SAGA register $DFF213 (wheel counter, 8-bit signed)
-   • Reads SAGA register $DFF212 bits 8-9 (buttons 4 & 5)
+   - Reads @{b}SAGA@{ub} register $DFF213 (wheel counter, 8-bit signed)
+   - Reads @{b}SAGA@{ub} register $DFF212 bits 8-9 (buttons 4 & 5)
 
 3. @{b}Delta Calculation@{ub}
    Tracks last wheel position and calculates signed delta:
-   • Handles 8-bit wrap-around (255→0, 0→255)
-   • Clamps to ±256 range
+   - Handles 8-bit wrap-around (255->0, 0->255)
+   - Clamps to +/- 256 range
 
 4. @{b}Event Injection@{ub}
    Sends input events via input.device:
-   • IECLASS_RAWKEY with NM_WHEEL_UP/DOWN codes
-   • IECLASS_NEWMOUSE with NM_WHEEL_UP/DOWN codes
-   • Both events sent for maximum compatibility
+   - IECLASS_RAWKEY with NM_WHEEL_UP/DOWN codes
+   - IECLASS_NEWMOUSE with NM_WHEEL_UP/DOWN codes
+   - Both events sent for maximum compatibility
 
 5. @{b}Adaptive Polling@{ub}
    Dynamically adjusts polling interval based on activity:
-   • IDLE state: slow polling (100-200ms)
-   • ACTIVE state: medium polling (30-80ms)
-   • BURST state: fast polling (10-40ms)
-   • Smooth transitions with configurable thresholds
+   - IDLE state: slow polling (100-200ms)
+   - ACTIVE state: medium polling (30-80ms)
+   - BURST state: fast polling (10-40ms)
+   - Smooth transitions with configurable thresholds
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
-
-@{b}SAGA Hardware Registers@{ub}
-
-  @{b}$DFF212@{ub} (WORD)
-    Bit 9:     Mouse button 5 (1=pressed)
-    Bit 8:     Mouse button 4 (1=pressed)
-    Bit 7-0:   Wheel counter (8-bit signed)
-
-  @{b}$DFF213@{ub} (BYTE)
-    Alias for high byte of $DFF212 (wheel counter)
-
-Counter increments/decrements with wheel movement and wraps at
-0/255 boundaries. Driver must track delta between reads.
-
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
-
-@{b}NewMouse Event Codes@{ub}
-
-  NM_WHEEL_UP       = 0x7A
-  NM_WHEEL_DOWN     = 0x7B
-  NM_WHEEL_LEFT     = 0x7C (not used)
-  NM_WHEEL_RIGHT    = 0x7D (not used)
-  NM_BUTTON_FOURTH  = 0x7E
-  NM_BUTTON_FIFTH   = 0x7F
-
-~ XMouseD [PROGRAM_NAME]~ sends both RAWKEY and NEWMOUSE class events for each
-action to ensure broad compatibility.
-
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
-
-@{b}Resource Usage@{ub}
-
-  @{b}Executable Size@{ub}: ~6KB
-  @{b}Memory Usage@{ub}:    ~8KB resident
-  @{b}CPU Usage@{ub}:
-    • BALANCED adaptive: <1% average, <3% when scrolling
-    • ECO adaptive: <0.5% average
-    • INTENSIVE normal: ~2-4% constant
-
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @{b}Public Port Protocol@{ub}
 
-~ XMouseD [PROGRAM_NAME]~ listens on port "~ XMouseD [PROGRAM_NAME]~" for control messages:
+XMouseD listens on port "XMouseD_Port" for control messages:
 
   @{b}XMSG_CMD_QUIT@{ub} (0)         - Stop daemon
   @{b}XMSG_CMD_SET_CONFIG@{ub} (1)   - Update config byte
@@ -428,25 +376,22 @@ action to ensure broad compatibility.
 This allows external tools (future XMouseCtrl GUI) to control
 the daemon without restarting it.
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
-
-For full technical documentation, see:
-  • TECHNICAL.md - Architecture and implementation details
-  • VISION.md - Design philosophy and rationale
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @endnode
 
 @node license "License & Credits"
 @prev technical
 @toc main
-
-@{b}LICENSE & CREDITS@{ub}
-
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
+@{fg highlight}
+                           @{b}LICENSE & CREDITS@{ub}
+@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @{b}MIT License@{ub}
 
-Copyright (c) 2025 ~ Vincent Buzzano [PROGRAM_AUTHOR]~
+Copyright (c) 2025 Vincent Buzzano
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -467,32 +412,36 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @{b}Credits@{ub}
 
-  @{b}Author@{ub}:        ~ Vincent Buzzano [PROGRAM_AUTHOR]~
-  @{b}Version@{ub}:       ~ 1.0 [PROGRAM_VERSION]~
-  @{b}Date@{ub}:          ~ 2025-12-17 [PROGRAM_DATE]~
+  @{b}Author@{ub}:        Vincent Buzzano
+  @{b}Version@{ub}:       1.0
+  @{b}Date@{ub}:          2025-12-18
   @{b}Toolchain@{ub}:     VBCC m68k-amigaos compiler
-  @{b}Target@{ub}:        Vampire/Apollo SAGA 68080
+  @{b}Target@{ub}:        Vampire/@{b}Apollo@{ub} @{b}SAGA@{ub} 68080
 
 @{b}Special Thanks@{ub}:
-  • Apollo Team for SAGA chipset documentation
-  • Amiga community for NewMouse protocol
-  • VBCC developers for excellent m68k compiler
+  - @{b}Apollo@{ub} Team for @{b}SAGA@{ub} chipset documentation
+  - Amiga community for NewMouse protocol
+  - VBCC developers for excellent m68k compiler
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @{b}Support & Feedback@{ub}
 
-  @{b}GitHub@{ub}:  https://github.com/vbuzzano/XMouse-Saga
+  @{b}GitHub@{ub}:  https://github.com/vbuzzano/XMouse-@{b}SAGA@{ub}
   @{b}Issues@{ub}:  Report bugs or request features on GitHub
-  @{b}Discord@{ub}: Join the Apollo community for support
+  @{b}Discord@{ub}: Join the @{b}Apollo@{ub} community for support
 
-@{fg highlight}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━@{fg text}
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
-                @{fg shine}Thank you for using ~ XMouseD [PROGRAM_NAME]~!@{fg text}
+                @{fg shine}Thank you for using XMouseD!@{fg text}
+
+
+@{fg highlight}------------------------------------------------------------------------------@{fg text}
 
 @endnode
+
 
