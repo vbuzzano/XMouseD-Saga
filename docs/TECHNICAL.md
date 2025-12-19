@@ -35,7 +35,7 @@ Loop:
 daemon_Cleanup()
   → Close devices, remove port
 ```
-  
+
 ---
 
 ## SAGA Hardware Reading
@@ -364,6 +364,3 @@ make upload
 This performs:
 1. Build the executable (if needed)
 2. Upload `dist/XMouseD` to Vampire via ACP
-
-
-
