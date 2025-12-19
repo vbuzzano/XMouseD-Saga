@@ -35,7 +35,7 @@ Loop:
 daemon_Cleanup()
   → Close devices, remove port
 ```
-
+  
 ---
 
 ## SAGA Hardware Reading
