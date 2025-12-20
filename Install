@@ -30,7 +30,7 @@
 (copyfiles
   (prompt "Copying ~ XMouseD [PROGRAM_EXE_NAME]~ executable...")
   (help @copyfiles-help)
-  (protect "~ XMouseD [PROGRAM_EXE_NAME]~" +e)
+  (protect "~ XMouseD [PROGRAM_EXE_NAME]~" "+e")
   (confirm "expert")
   (source "~ XMouseD [PROGRAM_EXE_NAME]~")
   (dest #dest-cmd)
@@ -55,8 +55,6 @@
 ; ========================================
 ; Step 4: Copy guide
 ; ========================================
-
-(protect XMouseD.guide )
 
 (copyfiles
   (prompt "Copying ~ XMouseD [PROGRAM_NAME]~.guide documentation...")
