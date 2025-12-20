@@ -37,13 +37,13 @@ Get-Content .env | ForEach-Object {
 }
 
 $escapedVersion = $env:PROGRAM_VERSION -replace '[^A-Za-z0-9._-]', '_'
-$ReleaseDir = "$env:DIST_DIR\$env:PROGRAM_NAME-$escapedVersion"
+$ReleaseDir = "$env:PROGRAM_NAME-$escapedVersion"
 
 # create release directory
 if ((Test-Path $env:DIST_DIR)) {
     Remove-item -Recurse -Force $env:DIST_DIR -ErrorAction Stop
 }
-New-Item -ItemType Directory -Path $ReleaseDir | Out-Null
+New-Item -ItemType Directory -Path "$env:DIST_DIR\$ReleaseDir" -ErrorAction Stop
 
 # SOURCE
 . $EnvReplace  -Recurse -Force -Path ".\src"
@@ -51,30 +51,30 @@ New-Item -ItemType Directory -Path $ReleaseDir | Out-Null
 # PROGRAM
 make clean
 make MODE=release rebuild
-Move-Item -Force "$env:DIST_DIR\$env:PROGRAM_EXE_NAME" "$ReleaseDir"
+Move-Item -Force "$env:DIST_DIR\$env:PROGRAM_EXE_NAME" "$env:DIST_DIR\$ReleaseDir"
 
 # GUIDE
 . $EnvReplace  -Force -OutputDir ".\dist" -Path "XMouseD.guide"
-Move-Item -Force "$env:DIST_DIR\XMouseD.guide" "$ReleaseDir\$env:PROGRAM_NAME.guide"
-Copy-Item -Force "$env:ASSETS_DIR\Guide.info" "$ReleaseDir\$env:PROGRAM_NAME.guide.info"
+Move-Item -Force "$env:DIST_DIR\XMouseD.guide" "$env:DIST_DIR\$ReleaseDir\$env:PROGRAM_NAME.guide"
+Copy-Item -Force "$env:ASSETS_DIR\Guide.info" "$env:DIST_DIR\$ReleaseDir\$env:PROGRAM_NAME.guide.info"
 
-# README
-. $EnvReplace -Force -OutputDir ".\dist" -Path "XMouseD.readme"
-Move-Item -Force "$env:DIST_DIR\XMouseD.readme" "$env:DIST_DIR\$env:PROGRAM_NAME-$escapedVersion.readme"
-Copy-Item -Force "$env:ASSETS_DIR\Ascii.info" "$env:DIST_DIR\$env:PROGRAM_NAME-$escapedVersion.readme.info"
 
 # INSTALL
 . $EnvReplace -Force -OutputDir ".\dist" -Path "Install"
-Move-Item -Force "$env:DIST_DIR\Install" "$ReleaseDir\Install"
-Copy-Item -Force "$env:ASSETS_DIR\Install.info" "$ReleaseDir\Install.info"
+Move-Item -Force "$env:DIST_DIR\Install" "$env:DIST_DIR\$ReleaseDir\Install"
+Copy-Item -Force "$env:ASSETS_DIR\Install.info" "$env:DIST_DIR\$ReleaseDir\Install.info"
 
-# Folder
-Copy-Item -Force "$env:ASSETS_DIR\Drawer.info" "$env:DIST_DIR\$env:PROGRAM_NAME-$escapedVersion.info"
+# README
+. $EnvReplace -Force -OutputDir ".\dist" -Path "XMouseD.readme"
+Move-Item -Force "$env:DIST_DIR\XMouseD.readme" "$env:DIST_DIR\$ReleaseDir.readme"
+Copy-Item -Force "$env:ASSETS_DIR\Ascii.info" "$env:DIST_DIR\$ReleaseDir.readme.info"
+
+## Folder
+Copy-Item -Force "$env:ASSETS_DIR\Drawer.info" "$env:DIST_DIR\$ReleaseDir\$ReleaseDir.info"
 
 
 # Create LHA archive
 cd $env:DIST_DIR
-. ..\$env:LHATOOL -at $env:PROGRAM_NAME-$escapedVersion.lha $env:PROGRAM_NAME-$escapedVersion\Install $env:PROGRAM_NAME-$escapedVersion\$env:PROGRAM_NAME.guide $env:PROGRAM_NAME-$escapedVersion.readme
-. ..\$env:LHATOOL -a $env:PROGRAM_NAME-$escapedVersion.lha $env:PROGRAM_NAME-$escapedVersion\$env:PROGRAM_EXE_NAME $env:PROGRAM_NAME-$escapedVersion\Install.info $env:PROGRAM_NAME-$escapedVersion\$env:PROGRAM_NAME.guide.info $env:PROGRAM_NAME-$escapedVersion.info $env:PROGRAM_NAME-$escapedVersion.readme.info
-. ..\$env:LHATOOL -l $env:PROGRAM_NAME-$escapedVersion.lha
+. ..\$env:LHATOOL -a "$ReleaseDir.lha" "$ReleaseDir\$env:PROGRAM_EXE_NAME" "$ReleaseDir\Install" "$ReleaseDir\Install.info" "$ReleaseDir\$env:PROGRAM_NAME.guide" "$ReleaseDir\$env:PROGRAM_NAME.guide.info" "$ReleaseDir.info" "$ReleaseDir.readme" "$ReleaseDir.readme.info"
+. ..\$env:LHATOOL -l "$ReleaseDir.lha"
 cd ..
