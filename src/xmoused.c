@@ -26,7 +26,7 @@
 
 // ---> BEGIN GENERATED PROGRAM_CONSTANTS
 #define PROGRAM_NAME "XMouseD"
-#define PROGRAM_VERSION "1.0"
+#define PROGRAM_VERSION "1.0-rc1"
 #define PROGRAM_DATE "22.12.2025"
 #define PROGRAM_AUTHOR "Vincent Buzzano"
 #define PROGRAM_DESC_SHORT "SAGA eXtended Mouse Driver"

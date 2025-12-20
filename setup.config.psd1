@@ -11,7 +11,7 @@
     # ========================================================================
     Project = @{
         Name        = "XMouseD"
-        Version     = "1.0"
+        Version     = "1.0-rc1"
         VersionDate = "22.12.2025"
         Author      = "Vincent Buzzano"
         Description = "Extended mouse driver for Apollo 68080 SAGA chipset"
