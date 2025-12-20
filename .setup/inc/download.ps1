@@ -24,7 +24,7 @@ function Download-File {
     
     try {
         $ProgressPreference = 'SilentlyContinue'
-        Invoke-WebRequest -Uri $Url -OutFile $outPath -UseBasicParsing
+        Invoke-WebRequest -Uri $Url -OutFile $outPath -UseBasicParsing -AllowUnencryptedAuthentication -AllowInsecureRedirect
         $ProgressPreference = 'Continue'
         
         $size = [math]::Round((Get-Item $outPath).Length / 1KB, 1)

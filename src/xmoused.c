@@ -27,7 +27,7 @@
 // ---> BEGIN GENERATED PROGRAM_CONSTANTS
 #define PROGRAM_NAME "XMouseD"
 #define PROGRAM_VERSION "1.0"
-#define PROGRAM_DATE "2025-12-17"
+#define PROGRAM_DATE "22.12.2025"
 #define PROGRAM_AUTHOR "Vincent Buzzano"
 #define PROGRAM_DESC_SHORT "SAGA eXtended Mouse Driver"
 // <--- END GENERATED PROGRAM CONSTANTS
@@ -50,8 +50,7 @@
 
 // $VERS: String
 #define VERSION_STRING "$VER: " \
-PROGRAM_NAME" "PROGRAM_VERSION" ("PROGRAM_DATE")" \
-PROGRAM_DESC_SHORT" (c) "PROGRAM_AUTHOR
+PROGRAM_NAME " " PROGRAM_VERSION " (" PROGRAM_DATE ") " PROGRAM_DESC_SHORT \ ", (c) " PROGRAM_AUTHOR
 
 //===========================================================================
 // User Messages

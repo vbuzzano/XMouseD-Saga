@@ -58,6 +58,18 @@
     # ========================================================================
     Packages = @(
         @{
+            Name        = "Lha for Windows"
+            Url         = "https://aminet.net/util/arc/lhant.lha"
+            File        = "lhant.lha"
+            Description = "Windows version of LHA"
+            Archive     = "lha"           # zip, lha, 7z, tar.gz
+            Mode        = "auto"          # auto = install without asking
+            Extract     = @(
+                "TOOL:lhant.exe:vendor/tools/lhant.exe:LHATOOL"
+                "TOOL:lhant.readme:vendor/tools"
+            )
+        }
+        @{
             Name        = "VBCC Compiler"
             Url         = "http://phoenix.owl.de/vbcc/current/vbcc_bin_win64.zip"
             File        = "vbcc_bin_win64.zip"
