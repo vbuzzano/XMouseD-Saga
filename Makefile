@@ -14,18 +14,21 @@ SHELL = cmd.exe
 # --- Configuration ---
 TOOLS_DIR = $(VENDOR_DIR)/tools
 
-# Source files (auto-detected)
-SRC = $(wildcard $(SRC_DIR)/*.c)
+# Source files
+SRC_XMOUSED = $(SRC_DIR)/xmoused.c
+SRC_XBTTS = $(SRC_DIR)/xbtts.c
 ASM = $(wildcard $(SRC_DIR)/*.s)
 
 EXE_FILE = $(DIST_DIR)/$(PROGRAM_EXE_NAME)
+EXE_XBTTS = $(DIST_DIR)/xbtts
 EXECMD_FILE = $(subst /,\,$(EXE_FILE))
 
 # Generated files
-OBJS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
-ASM_FILES = $(patsubst $(SRC_DIR)/%.c,$(ASM_DIR)/%.asm,$(SRC))
+OBJ_XMOUSED = $(OBJ_DIR)/xmoused.o
+OBJ_XBTTS = $(OBJ_DIR)/xbtts.o
+ASM_XMOUSED = $(ASM_DIR)/xmoused.asm
+ASM_XBTTS = $(ASM_DIR)/xbtts.asm
 ASM_OBJS = $(patsubst $(SRC_DIR)/%.s,$(OBJ_DIR)/%.o,$(ASM))
-ALL_OBJS = $(OBJS) $(ASM_OBJS)
 
 # Compiler and Linker
 CC = vc
@@ -66,8 +69,12 @@ ifeq ($(MODE),release)
     # Release: optimize size, strip debug, remove LOG_Debug
     CFLAGS = -O3 -speed -sc -schedule -DRELEASE $(C_INCL_ALL) $(EXTRA_CFLAGS) -cpu=$(CPU)
 else
-    # Dev: same optimization but with debug symbols
-    CFLAGS = -O3 -speed -sc -schedule -DEBUG_ADAPTIVE $(C_INCL_ALL) $(EXTRA_CFLAGS) -cpu=$(CPU)
+	ifeq ($(MODE),xbtts)
+	    CFLAGS = -O3 -speed -sc -schedule -DXBTTS $(C_INCL_ALL) $(EXTRA_CFLAGS) -cpu=$(CPU)
+	else
+		# Dev: same optimization but with debug symbols
+		CFLAGS = -O3 -speed -sc -schedule -DEBUG_ADAPTIVE $(C_INCL_ALL) $(EXTRA_CFLAGS) -cpu=$(CPU)
+	endif
 endif
 
 
@@ -77,7 +84,7 @@ LDFLAGS =
 
 # --- Build Rules ---
 # Default target
-all: dirs build
+all: help
 
 dirs:
 	@if not exist "$(BUILD_DIR)" mkdir "$(BUILD_DIR)"
@@ -86,16 +93,34 @@ dirs:
 	@if not exist "$(DIST_DIR)" mkdir "$(DIST_DIR)"
 
 
-build: $(EXE_FILE) #$(ASM_FILES)
+build: $(EXE_FILE) #$(ASM_XMOUSED) $(ASM_XBTTS)
 rebuild: clean build
+
+build-xbtts: $(EXE_XBTTS)
+rebuild-xbtts: clean build-xbtts
+
+build-release:
+	@$(MAKE) build MODE=release
+
+rebuild-release: clean build-release
+
 
 release:
 	@echo ------------------------------------------------------------------
 	@echo Build Release: ${PROGRAM_NAME} Version: $(PROGRAM_VERSION)
-	@echo ------------------------- -----------------------------------------
+	@echo ------------------------------------------------------------------
 	@pwsh .\scripts\build-release.ps1
-	@echo ------------------------- -----------------------------------------
+	@echo ------------------------------------------------------------------
 	@echo Release build completed: $(DIST_DIR)\$(PROGRAM_NAME)-$(PROGRAM_VERSION)
+
+
+xbtts:
+	@echo ------------------------------------------------------------------
+	@echo "Build xbtts & XMouseD (XBTTS)"
+	@echo ------------------------------------------------------------------
+	@$(MAKE) clean
+	@$(MAKE) build-xbtts
+	@$(MAKE) build MODE=xbtts
 
 # --- Housekeeping ---
 clean:
@@ -104,45 +129,66 @@ clean:
 	@if exist "$(DIST_DIR)\*" del /f /q "$(DIST_DIR)\*"
 	@echo Cleaned build files while preserving directory structure
 
-upload: $(EXE_FILE)
+# --- Upload to Vampire V4 ---
+upload: $(EXE_FILE) $(EXE_XBTTS)
 	@echo ------------------------------------------------------------------
 	@echo Upload to V4 host: $(APOLLO_V4_HOST)
-	@echo ------------------------- -----------------------------------------
+	@echo ------------------------------------------------------------------
 	@$(ACP) $(EXECMD_FILE) "$(APOLLO_V4_HOST)"
+	@$(ACP) $(subst /,\,$(EXE_XBTTS)) "$(APOLLO_V4_HOST)"
 #	@$(ACP) $(GUIDEPATH) "$(APOLLO_V4_HOST)"
 #	@$(ACP) $(INSTALLPATH) "$(APOLLO_V4_HOST)"
 #	@$(ACP) $(GDB) "$(APOLLO_V4_HOST)"
 #	@echo bgdbserver $(PROGRAM_EXE_NAME) > $(EXECMD_FILE)_Debug
 #	@$(ACP) $(EXECMD_FILE)_Debug "$(APOLLO_V4_HOST)"
 
+# --- Help ---
 help:
+	@echo ------------------------------------------------------------------
+	@echo XMouseD Makefile
+	@echo ------------------------------------------------------------------
 	@echo Available targets:
-	@echo   all        - Build (default)
-	@echo   build      - Build the project
-	@echo   rebuild    - Clean and build
-	@echo   clean      - Remove build files
-	@echo   upload     - Upload to Vampire V4
+	@echo   build           - Build program: XmouseD
+	@echo   rebuild         - Clean and build XMouseD
+	@echo   clean           - Remove all build and dist files
+	@echo   upload          - Upload XMouseD to Vampire V4
+	@echo   build-xbtts     - Build xbtts (Fake test buttons 4/5) tool only
+	@echo   rebuild-xbtts   - Clean and build xbtts
+	@echo   build-release   - Build release version of XMouseD
+	@echo   rebuild-release - Clean and build release version of XMouseD
+	@echo   release         - Build XMouseD LHA release (optimized, stripped)
+	@echo   xbtts           - Clean and build xbtts and XMouseD (xbtts mode)
+	@echo   help/all        - Show this help
+	@echo ------------------------------------------------------------------
+	@echo   MODE=release  - Build XMouseD release program
+
 
 # Phony targets
-.PHONY: all help clean upload build rebuild
+.PHONY: all help clean upload build rebuild build-release rebuild-release build-xbtts rebuild-xbtts release xbtts dirs
 
 
 # Create directories if they don't exist
 $(BUILD_DIR) $(DIST_DIR) $(OBJ_DIR) $(ASM_DIR):
 	@if not exist "$@" mkdir "$@"
 
-# Link the executable
-$(EXE_FILE): $(ALL_OBJS) | $(DIST_DIR)
+# Link the executables
+$(EXE_FILE): $(OBJ_XMOUSED) $(ASM_OBJS) | $(DIST_DIR)
 	$(CC) $(CFLAGS) $(AMIGA_FLAGS) $(LDFLAGS) -o $@ $^
 
-# Compile sources (src/*.c)
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+$(EXE_XBTTS): $(OBJ_XBTTS) | $(DIST_DIR)
+	$(CC) -O2 -I$(C_INCL_VBCC) -I$(C_INCL_NDK39) +aos68k -lamiga -o $@ $^
+
+# Compile sources
+$(OBJ_XMOUSED): $(SRC_XMOUSED) | $(OBJ_DIR)
 	$(CC) $(CFLAGS) $(AMIGA_FLAGS) -c -o $@ $<
 
-# Generate assembly files from .c sources
-$(ASM_DIR)/%.asm: $(SRC_DIR)/%.c | $(ASM_DIR)
+$(OBJ_XBTTS): $(SRC_XBTTS) | $(OBJ_DIR)
+	$(CC) -O2 -I$(C_INCL_VBCC) -I$(C_INCL_NDK39) +aos68k -c -o $@ $<
+
+# Generate assembly files
+$(ASM_XMOUSED): $(SRC_XMOUSED) | $(ASM_DIR)
 	$(CC) $(CFLAGS) $(AMIGA_FLAGS) -S -o=$@ $<
 
 # Assemble .s files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.s | $(OBJ_DIR)
-	$(VBCC_PATH)/bin/vasmm68k_mot -Fhunk -o $@ $<
+	$(VBCC)/bin/vasmm68k_mot -Fhunk -o $@ $<

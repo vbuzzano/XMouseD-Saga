@@ -48,9 +48,17 @@
 #define MODE_NAME_REACTIVE      "REACTIVE"
 #define MODE_NAME_ECO           "ECO"
 
+#ifndef RELEASE
+    #define PROGRAM_DESC_V          PROGRAM_DESC_SHORT
+#elif XBTTS
+    #define PROGRAM_DESC_V          "XBTTS BUILD"
+#else
+    #define PROGRAM_DESC_V          "DEV BUILD"
+#endif
+
 // $VERS: String
 #define VERSION_STRING "$VER: " \
-PROGRAM_NAME " " PROGRAM_VERSION " (" PROGRAM_DATE ") " PROGRAM_DESC_SHORT \
+PROGRAM_NAME " " PROGRAM_VERSION " (" PROGRAM_DATE ") " PROGRAM_DESC_V \
 ", (c) " PROGRAM_AUTHOR
 
 //===========================================================================
@@ -82,7 +90,15 @@ PROGRAM_NAME " " PROGRAM_VERSION " (" PROGRAM_DATE ") " PROGRAM_DESC_SHORT \
 // SAGA USB Mouse Registers                                                  
 //===========================================================================
 
-#define SAGA_MOUSE_BUTTONS      (*((volatile UWORD*)0xDFF212))
+#ifdef XBTTS
+    // XBttS shared memory location for emulated buttons 4/5
+    // (XBttS daemon writes here when intercepting Amiga+Button1/2)
+    #define XBTTS_SHARED_ADDR       0x1FFFFFFC
+    #define SAGA_MOUSE_BUTTONS      (*((volatile UWORD*)XBTTS_SHARED_ADDR))
+#else
+    #define SAGA_MOUSE_BUTTONS      (*((volatile UWORD*)0xDFF212))
+#endif
+
 #define SAGA_WHEELCOUNTER       (*((volatile BYTE*)0xDFF212 + 1))
 
 // Button bit masks in SAGA_MOUSE_BUTTONS (bits 8-9)
